@@ -27,7 +27,16 @@ namespace Unity.FPS.Multiplayer
         Button m_JoinButton;
         Button m_DisconnectButton;
 
-        void Awake() => Build();
+        void Awake()
+        {
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+
+            Build();
+        }
 
         void Update()
         {

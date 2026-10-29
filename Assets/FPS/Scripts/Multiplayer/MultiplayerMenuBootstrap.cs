@@ -20,6 +20,10 @@ namespace Unity.FPS.Multiplayer
 
         static void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
         {
+            // Browsers cannot host a UDP listen server. WebGL builds are single-player only.
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+                return;
+
             if (scene.name != k_MenuSceneName)
                 return;
 

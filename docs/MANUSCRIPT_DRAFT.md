@@ -469,6 +469,10 @@ capable graphics card, 8 GB of RAM, and a local network connection for
 multiplayer. It does not require an internet connection, an account, or a
 subscription.
 
+A WebGL browser build is also produced for the single-player campaign, so the
+game can be demonstrated without installing it. The cooperative mode requires
+the desktop build because browsers cannot host a UDP listen server.
+
 Accessibility features include subtitles for mission briefings, remappable
 keys, mouse sensitivity and field-of-view settings, colorblind-friendly status
 indicators, and a difficulty selection. These features are intended to make the

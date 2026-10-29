@@ -138,7 +138,44 @@ networks. If it was dismissed, add an inbound rule for UDP 7777.
 
 ---
 
-## 5. Troubleshooting
+## 5. WebGL (browser) build
+
+WebGL is supported for the **single-player campaign**. The LAN panel is hidden
+in WebGL builds because browsers cannot host a UDP listen server.
+
+1. **File ▸ Build Profiles** → **Add Build Profile** → **WebGL**.
+2. Use the same scene list:
+   `IntroMenu, WinScene, LoseScene, Level01_Foundry, Level02_Observatory`.
+3. Build, then **serve the folder over HTTP**. Do not open `index.html` with
+   `file://`.
+   - Easiest: use Unity's **Build And Run** (it starts a local server), or
+   - `python3 -m http.server 8000` inside the build folder, then open
+     `http://localhost:8000`.
+4. Compression: the project uses Gzip. If a plain static server fails to load
+   the build, enable **Decompression Fallback** in
+   **Project Settings ▸ Player ▸ Publishing Settings** (it is enabled in this
+   project) or use Unity's Build And Run.
+
+### WebGL and multiplayer
+
+- A browser **cannot host** a Unity Transport listen server and cannot use raw
+  UDP.
+- Browser clients can only join a **desktop/headless server configured for
+  WebSockets** (or a Relay/WebRTC service). The current project is UDP/LAN, so
+  browser multiplayer is out of scope.
+- Keep the **desktop build** for 4-player LAN co-op; use the WebGL build for the
+  single-player campaign demo.
+
+### WebGL caveats
+
+- Large project: the template assets plus the 40 MB Observatory scene make the
+  first load long and the build large. Test memory and reduce texture quality if
+  needed.
+- Some template packages (AI Inference, tutorial framework) may increase build
+  size or fail to build for WebGL; they are not needed by the game and can be
+  removed if the WebGL build complains.
+
+## 6. Troubleshooting
 
 | Symptom | Fix |
 |---|---|

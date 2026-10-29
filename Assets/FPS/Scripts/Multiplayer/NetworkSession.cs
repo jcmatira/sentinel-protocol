@@ -731,6 +731,9 @@ namespace Unity.FPS.Multiplayer
         /// <summary>Best-effort LAN IPv4 address to show to the host.</summary>
         public static string GetLocalIPv4()
         {
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+                return "127.0.0.1";
+
             try
             {
                 IPAddress[] addresses = Dns.GetHostEntry(Dns.GetHostName()).AddressList;
