@@ -40,8 +40,8 @@ Full narrative: [docs/STORY.md](docs/STORY.md)
 
 - **Blackout Protocol** game mode — rules, mission timer, scoring, victory/loss
   conditions, mission HUD and level intro banner.
-- **Two-level campaign** — Foundry (`MainScene`) and Observatory
-  (`SecondaryScene`) linked with score carry-over.
+- **Two-level campaign** — Foundry (`Level01_Foundry`) and Observatory
+  (`Level02_Observatory`) linked with score carry-over.
 - Level setup tool: **Tools ▸ Levels ▸ Setup Two-Level Campaign**.
 - Build fixes: scene-load bootstrap, NavMesh agent recovery.
 
@@ -73,11 +73,11 @@ Details: [docs/GAMEPLAY.md](docs/GAMEPLAY.md) ·
 ## Open and play (single-player)
 
 1. Open the project in Unity Hub.
-2. Open `Assets/FPS/Scenes/MainScene.unity`.
+2. Open `Assets/FPS/Scenes/Level01_Foundry.unity`.
 3. Press **Play**.
 4. Recommended: run **Tools ▸ Levels ▸ Setup Two-Level Campaign** first. It saves
    the per-level mission settings into both scenes and registers
-   `SecondaryScene` in the Build Settings.
+   `Level02_Observatory` in the Build Settings.
 
 ## LAN multiplayer (Phase 0)
 
@@ -102,8 +102,8 @@ spawning are Phase 1 work.
 IntroMenu
 WinScene
 LoseScene
-MainScene        <- LEVEL 1 · FOUNDRY
-SecondaryScene   <- LEVEL 2 · OBSERVATORY
+Level01_Foundry        <- LEVEL 1 · FOUNDRY
+Level02_Observatory   <- LEVEL 2 · OBSERVATORY
 ```
 
 Then **Build And Run**. The game starts in the menu, press **START**.
@@ -130,7 +130,7 @@ Bindings live in the Input System actions asset under `Assets/...`.
 Assets/FPS/
   Scripts/Gameplay/GameMode/   Blackout Protocol mode, HUD, bootstrap
   Scripts/Editor/              Level setup tools
-  Scenes/                      MainScene, SecondaryScene, menu/win/lose
+  Scenes/                      Level01_Foundry, Level02_Observatory, menu/win/lose
   Prefabs/                     Microgame prefab kits
 docs/                          Story, gameplay, levels, multiplayer, roadmap
 ```

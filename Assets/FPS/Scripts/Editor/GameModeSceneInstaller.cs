@@ -7,31 +7,31 @@ using UnityEngine.SceneManagement;
 namespace Unity.FPS.Gameplay.EditorTools
 {
     /// <summary>
-    /// Optional helper: puts a GameModeManager GameObject inside MainScene and saves it, so the
+    /// Optional helper: puts a GameModeManager GameObject inside Level01_Foundry and saves it, so the
     /// gameplay mode is visible and configurable in the Hierarchy.
     /// The mode also works at runtime without this step (see GameModeBootstrap).
     /// </summary>
     public static class GameModeSceneInstaller
     {
-        const string k_MainScenePath = "Assets/FPS/Scenes/MainScene.unity";
+        const string k_Level1Path = "Assets/FPS/Scenes/Level01_Foundry.unity";
 
-        [MenuItem("Tools/Game Mode/Install Game Mode Into MainScene")]
-        public static void InstallIntoMainScene()
+        [MenuItem("Tools/Game Mode/Install Game Mode Into Level 1")]
+        public static void InstallIntoLevel1()
         {
             Scene activeScene = SceneManager.GetActiveScene();
 
-            if (activeScene.path != k_MainScenePath)
+            if (activeScene.path != k_Level1Path)
             {
                 EditorUtility.DisplayDialog(
                     "Game Mode",
-                    "Open " + k_MainScenePath + " first, then run this command again.",
+                    "Open " + k_Level1Path + " first, then run this command again.",
                     "OK");
                 return;
             }
 
             if (Object.FindAnyObjectByType<GameModeManager>() != null)
             {
-                EditorUtility.DisplayDialog("Game Mode", "MainScene already contains a Game Mode Manager.", "OK");
+                EditorUtility.DisplayDialog("Game Mode", "Level01_Foundry already contains a Game Mode Manager.", "OK");
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace Unity.FPS.Gameplay.EditorTools
             EditorSceneManager.MarkSceneDirty(activeScene);
             EditorSceneManager.SaveScene(activeScene);
 
-            Debug.Log("[Game Mode] Game Mode Manager added to MainScene and saved.");
+            Debug.Log("[Game Mode] Game Mode Manager added to Level01_Foundry and saved.");
         }
     }
 }

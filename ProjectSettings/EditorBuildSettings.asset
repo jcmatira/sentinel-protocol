@@ -15,10 +15,10 @@ EditorBuildSettings:
     path: Assets/FPS/Scenes/LoseScene.unity
     guid: 72e5c65a45893714484002914e3fd521
   - enabled: 1
-    path: Assets/FPS/Scenes/MainScene.unity
+    path: Assets/FPS/Scenes/Level01_Foundry.unity
     guid: d794a2ef8ba31d847ad3c19d03e2ddb9
   - enabled: 1
-    path: Assets/FPS/Scenes/SecondaryScene.unity
+    path: Assets/FPS/Scenes/Level02_Observatory.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}

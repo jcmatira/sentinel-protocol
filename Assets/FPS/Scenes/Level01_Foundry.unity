@@ -699,7 +699,7 @@ MonoBehaviour:
   TimeLimit: 150
   LevelNumber: 1
   LevelName: FOUNDRY
-  NextLevelSceneName: SecondaryScene
+  NextLevelSceneName: Level02_Observatory
   CarryScoreFromPreviousLevel: 0
   CarryScoreToNextLevel: 1
   ScorePerKill: 100

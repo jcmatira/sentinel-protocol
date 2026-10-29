@@ -9,7 +9,7 @@ namespace Unity.FPS.Gameplay
     /// "Blackout Protocol" - a small, self-contained gameplay mode for the FPS Microgame.
     ///
     /// This script also drives the two-level campaign:
-    ///   Level 1 (MainScene / FOUNDRY)  -> Level 2 (SecondaryScene / OBSERVATORY) -> WinScene
+    ///   Level 1 (Level01_Foundry / FOUNDRY)  -> Level 2 (Level02_Observatory / OBSERVATORY) -> WinScene
     ///
     /// RULES
     ///  * Destroy every hostile bot in the level.
@@ -149,16 +149,16 @@ namespace Unity.FPS.Gameplay
         {
             switch (sceneName)
             {
-                case "MainScene":
+                case "Level01_Foundry":
                     LevelNumber = 1;
                     LevelName = "FOUNDRY";
                     TimeLimit = 150f;
-                    NextLevelSceneName = "SecondaryScene";
+                    NextLevelSceneName = "Level02_Observatory";
                     CarryScoreFromPreviousLevel = false;
                     CarryScoreToNextLevel = true;
                     break;
 
-                case "SecondaryScene":
+                case "Level02_Observatory":
                     LevelNumber = 2;
                     LevelName = "OBSERVATORY";
                     TimeLimit = 180f;

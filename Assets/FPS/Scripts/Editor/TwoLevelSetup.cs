@@ -14,22 +14,22 @@ namespace Unity.FPS.EditorTools
     /// <summary>
     /// Turns the two prefab-built levels that ship with the FPS Microgame into a small campaign:
     ///
-    ///   IntroMenu -> LEVEL 1  FOUNDRY      (MainScene)
-    ///             -> LEVEL 2  OBSERVATORY  (SecondaryScene)
+    ///   IntroMenu -> LEVEL 1  FOUNDRY      (Level01_Foundry)
+    ///             -> LEVEL 2  OBSERVATORY  (Level02_Observatory)
     ///             -> WinScene
     ///
     /// The level geometry, props, enemies and pickups in both scenes are the Microgame's own
     /// prefabs (Room/Section/Dungeon kit, Enemy_*, Pickup_*, GameManager, Player...).
     /// This tool only adds / configures the GameModeManager component on each scene and
-    /// registers SecondaryScene in the Build Settings.
+    /// registers Level02_Observatory in the Build Settings.
     /// </summary>
     public static class TwoLevelSetup
     {
-        const string k_Level1Path = "Assets/FPS/Scenes/MainScene.unity";
-        const string k_Level2Path = "Assets/FPS/Scenes/SecondaryScene.unity";
+        const string k_Level1Path = "Assets/FPS/Scenes/Level01_Foundry.unity";
+        const string k_Level2Path = "Assets/FPS/Scenes/Level02_Observatory.unity";
 
         /// <summary>
-        /// Keeps SecondaryScene in the Build Settings so the Level 1 -> Level 2 transition
+        /// Keeps Level02_Observatory in the Build Settings so the Level 1 -> Level 2 transition
         /// works even if the setup command below was not run yet.
         /// </summary>
         [InitializeOnLoadMethod]
@@ -53,7 +53,7 @@ namespace Unity.FPS.EditorTools
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                 return;
 
-            bool level1Ok = ConfigureLevel(k_Level1Path, 1, "FOUNDRY", 150f, "SecondaryScene", false, true);
+            bool level1Ok = ConfigureLevel(k_Level1Path, 1, "FOUNDRY", 150f, "Level02_Observatory", false, true);
             bool level2Ok = ConfigureLevel(k_Level2Path, 2, "OBSERVATORY", 180f, string.Empty, true, true);
 
             if (!level1Ok || !level2Ok)
@@ -69,7 +69,7 @@ namespace Unity.FPS.EditorTools
             // leave the user on Level 1
             EditorSceneManager.OpenScene(k_Level1Path, OpenSceneMode.Single);
 
-            Debug.Log("[Levels] Campaign ready: LEVEL 1 FOUNDRY (MainScene) -> LEVEL 2 OBSERVATORY (SecondaryScene) -> WinScene.");
+            Debug.Log("[Levels] Campaign ready: LEVEL 1 FOUNDRY (Level01_Foundry) -> LEVEL 2 OBSERVATORY (Level02_Observatory) -> WinScene.");
         }
 
         static bool ConfigureLevel(string path, int number, string levelName, float timeLimit,

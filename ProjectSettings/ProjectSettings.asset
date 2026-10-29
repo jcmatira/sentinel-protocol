@@ -12,8 +12,8 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: DefaultCompany
-  productName: Matira_JuanCarlo
+  companyName: jcmatira
+  productName: SentinelProtocol
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -150,8 +150,7 @@ PlayerSettings:
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
   bundleVersion: 5.1.6
-  preloadedAssets:
-  - {fileID: -944628639613478452, guid: 05b4aeda8533b704f9be24b556a43d98, type: 3}
+  preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   xboxOneDisableKinectGpuReservation: 0
@@ -171,7 +170,7 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Standalone: com.unity.template.fps
+    Standalone: com.jcmatira.sentinelprotocol
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -808,14 +807,14 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Matira_JuanCarlo
+  metroPackageName: SentinelProtocol
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: Matira_JuanCarlo
+  metroApplicationDescription: SentinelProtocol
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
@@ -889,7 +888,7 @@ PlayerSettings:
   cloudProjectId: 549c328c-a180-4d87-b4ac-b6eb3990cc6d
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Matira_JuanCarlo
+  projectName: SentinelProtocol
   organizationId: juan-carlo-matira
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

@@ -45,17 +45,17 @@ reaction time, fire rate, and new archetypes.
 ## Implemented today — two-level campaign
 
 ```
-IntroMenu -> LEVEL 1 · FOUNDRY (MainScene) -> LEVEL 2 · OBSERVATORY (SecondaryScene) -> WinScene
+IntroMenu -> LEVEL 1 · FOUNDRY (Level01_Foundry) -> LEVEL 2 · OBSERVATORY (Level02_Observatory) -> WinScene
 ```
 
 | | Level 1 — FOUNDRY | Level 2 — OBSERVATORY |
 |---|---|---|
-| Scene | `Assets/FPS/Scenes/MainScene.unity` | `Assets/FPS/Scenes/SecondaryScene.unity` |
+| Scene | `Assets/FPS/Scenes/Level01_Foundry.unity` | `Assets/FPS/Scenes/Level02_Observatory.unity` |
 | Theme | Underground foundry / dungeon | Multi-floor observatory with pit and balcony |
 | Bots | 2 (HoverBot + Turret) | 3 (2 × HoverBot + Turret) |
 | Time | 150 s | 180 s |
 | Pickups | 2 × health | 6 × health, Shotgun, Grenade Launcher |
-| Next | SecondaryScene | WinScene |
+| Next | Level02_Observatory | WinScene |
 
 Both levels are assembled entirely from the Microgame prefab kits
 (`Assets/FPS/Prefabs`): Floors, Walls, Dungeon, Rooms, MainLvl sections,
@@ -66,9 +66,9 @@ Both levels are assembled entirely from the Microgame prefab kits
 1. Open Unity.
 2. Run **Tools ▸ Levels ▸ Setup Two-Level Campaign**.
    - Adds a configured `Game Mode Manager` to both scenes.
-   - Registers `SecondaryScene` in Build Settings.
+   - Registers `Level02_Observatory` in Build Settings.
 3. Build Settings order:
-   `IntroMenu, WinScene, LoseScene, MainScene, SecondaryScene`.
+   `IntroMenu, WinScene, LoseScene, Level01_Foundry, Level02_Observatory`.
 
 ---
 
@@ -79,8 +79,8 @@ Counter-Strike-style co-op campaign.
 
 | # | Mission | Map | Source | Character |
 |---|---|---|---|---|
-| 1 | COLD START | FOUNDRY | existing `MainScene` | Tight dungeon, close-range scouts |
-| 2 | DEAD SIGNAL | OBSERVATORY | existing `SecondaryScene` | Vertical, mixed ranges |
+| 1 | COLD START | FOUNDRY | existing `Level01_Foundry` | Tight dungeon, close-range scouts |
+| 2 | DEAD SIGNAL | OBSERVATORY | existing `Level02_Observatory` | Vertical, mixed ranges |
 | 3 | SUPPLY LINE | DEPOT | new — Dungeon + Rooms kit | Corridors + open yard, heavies |
 | 4 | JUDGMENT | THE CORE | new — Catwalk/Balcony + custom core room | Open arena, boss encounter |
 
@@ -136,8 +136,8 @@ New maps should continue that rule so the project stays consistent and the
 IntroMenu
 WinScene
 LoseScene
-MainScene        <- FOUNDRY
-SecondaryScene   <- OBSERVATORY
+Level01_Foundry        <- FOUNDRY
+Level02_Observatory   <- OBSERVATORY
 Depot            <- SUPPLY LINE
 Core             <- JUDGMENT
 ```

@@ -10,12 +10,12 @@ namespace Unity.FPS.Gameplay
     /// one is created automatically.
     ///
     /// IMPORTANT: RuntimeInitializeOnLoadMethod(AfterSceneLoad) only fires once for the very
-    /// first scene of the application. In the Editor the first scene is usually MainScene, but
+    /// first scene of the application. In the Editor the first scene is usually Level01_Foundry, but
     /// in a build the first scene is IntroMenu - so we subscribe to SceneManager.sceneLoaded
     /// instead, which fires for every scene load (including the first one).
     ///
     /// If you prefer to see / tweak the mode in the Hierarchy, use
-    /// Tools > Game Mode > Install Game Mode Into MainScene.
+    /// Tools > Game Mode > Install Game Mode Into Level 1.
     /// </summary>
     public static class GameModeBootstrap
     {

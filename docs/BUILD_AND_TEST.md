@@ -6,7 +6,7 @@ How to test the LAN mode with one PC, and how to give the build to another PC.
 
 ## 1. Rebuild first
 
-The executable in the project root (`Matira_JuanCarlo_LabExer_05.x86_64`) was built
+The executable in the project root (`SentinelProtocol.x86_64`) was built
 **before Phase 0**, so it does not contain the LAN panel. Always rebuild after a
 code change.
 
@@ -16,8 +16,8 @@ code change.
 IntroMenu
 WinScene
 LoseScene
-MainScene
-SecondaryScene
+Level01_Foundry
+Level02_Observatory
 ```
 
 Then **Build** (or **Build And Run**).
@@ -133,7 +133,7 @@ networks. If it was dismissed, add an inbound rule for UDP 7777.
 
 | Symptom | Fix |
 |---|---|
-| Panel does not appear | You must be in `IntroMenu`, not `MainScene`. |
+| Panel does not appear | You must be in `IntroMenu`, not `Level01_Foundry`. |
 | Second instance focuses the first | `Force Single Instance` must stay **off**. |
 | Client cannot connect | Check the host IP, same network, UDP 7777 allowed. |
 | Host freezes when unfocused | `Run In Background` must stay **on**. |
