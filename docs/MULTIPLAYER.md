@@ -5,6 +5,41 @@
 
 ---
 
+## Phase 0 status (implemented)
+
+Phase 0 is in the repository:
+
+| Item | Where |
+|---|---|
+| Packages | `Packages/manifest.json` — Netcode for GameObjects **2.13.3**, Transport **2.7.4**, Multiplayer Play Mode **1.6.3**, Multiplayer Tools **2.2.12** |
+| Session manager | `Assets/FPS/Scripts/Multiplayer/NetworkSession.cs` |
+| Host / Join UI | `Assets/FPS/Scripts/Multiplayer/HostJoinUI.cs` (auto-added to IntroMenu) |
+| Connected-player limit | 4 (host + 3 clients), enforced in connection approval |
+| Network player prefab tool | `Assets/FPS/Scripts/Editor/MultiplayerSetup.cs` |
+| Player ownership script | `Assets/FPS/Scripts/Multiplayer/NetworkPlayer.cs` |
+
+### How to test Phase 0
+
+1. Open Unity and let the packages import.
+2. Run **Tools ▸ Multiplayer ▸ Setup Network Player Prefab** once.
+3. Open `Assets/FPS/Scenes/IntroMenu.unity` and press **Play**.
+4. In one instance (or a standalone build), click **HOST**.
+5. In another instance, enter the host IP and click **JOIN**.
+6. Both should show the same player count, up to `4`.
+
+The panel is additive — the normal **START** button still launches the
+single-player campaign.
+
+### Phase 0 limitations
+
+- The mission scene is **not** loaded through NGO yet. Clicking START after
+  hosting only changes the host's local scene. Networked scene loading and
+  player spawning are Phase 1/4 work.
+- The networked player prefab is prepared but not yet spawned, positioned, or
+  given per-player HUDs.
+
+---
+
 ## 1. Goals
 
 - 1 host + up to 3 clients on the same network

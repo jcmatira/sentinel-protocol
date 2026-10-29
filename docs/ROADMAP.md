@@ -14,12 +14,14 @@
 
 - [x] Repository, `.gitignore`, `.gitattributes`
 - [x] Documentation set
-- [ ] Install `com.unity.netcode.gameobjects`
-- [ ] Install `com.unity.transport`
-- [ ] Install `com.unity.multiplayer.playmode`
-- [ ] Install `com.unity.multiplayer.tools` (optional)
-- [ ] Host / Join UI on the menu
-- [ ] Connection approval and max-player config
+- [x] Install `com.unity.netcode.gameobjects` (2.13.3)
+- [x] Install `com.unity.transport` (2.7.4)
+- [x] Install `com.unity.multiplayer.playmode` (1.6.3)
+- [x] Install `com.unity.multiplayer.tools` (2.2.12)
+- [x] Host / Join UI on the menu
+- [x] Connection approval and max-player config
+- [x] Network player prefab setup tool
+- [ ] Networked mission scene loading (Phase 1/4)
 
 ## Phase 1 — Networking foundation
 

@@ -5,8 +5,8 @@
 >
 > Built on the Unity **FPS Microgame** template.
 
-> **Status:** single-player campaign implemented · LAN multiplayer in development.
-> See [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** single-player campaign implemented · LAN multiplayer **Phase 0**
+> (host/join) implemented. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 
@@ -47,7 +47,9 @@ Full narrative: [docs/STORY.md](docs/STORY.md)
 
 ### In development (multiplayer)
 
-- **1–4 player LAN co-op**, host/client, server-authoritative.
+- **Phase 0 — done:** LAN host/join, connection approval, 4-player limit,
+  networked player prefab tool.
+- **1–4 player LAN co-op**, host/client, server-authoritative (Phase 1+).
 - **Counter-Strike-style rounds** — freeze time, 2:00 rounds, elimination,
   best-of-5 per map, spectate on death.
 - **Bot difficulty profiles** — Scout / Trooper / Heavy / Sniper archetypes with
@@ -76,6 +78,17 @@ Details: [docs/GAMEPLAY.md](docs/GAMEPLAY.md) ·
 4. Recommended: run **Tools ▸ Levels ▸ Setup Two-Level Campaign** first. It saves
    the per-level mission settings into both scenes and registers
    `SecondaryScene` in the Build Settings.
+
+## LAN multiplayer (Phase 0)
+
+1. Let Unity import the new multiplayer packages on first open.
+2. Run **Tools ▸ Multiplayer ▸ Setup Network Player Prefab** once.
+3. Open `Assets/FPS/Scenes/IntroMenu.unity` and press **Play**.
+4. Click **HOST** in one instance; in a second instance enter the host IP and
+   click **JOIN**. The panel shows the connected player count (up to 4).
+
+Phase 0 verifies connectivity only. Networked mission loading and player
+spawning are Phase 1 work.
 
 ### Build
 
