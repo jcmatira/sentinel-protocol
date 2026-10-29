@@ -1,5 +1,47 @@
 # Level Design
 
+## Level structure (course framework)
+
+Each mission is designed around the level-structure model from the course:
+**objectives, flow, duration, availability, relationship, and progression**.
+
+| Mission | Objectives | Flow | Duration | Availability | Relationship | Progression |
+|---|---|---|---|---|---|---|
+| **1. Foundry** | Destroy the production-line defenders | Two lanes + a lower flank; one-way descent | 15–20 min | Linear | Introduces the round loop | Scouts + Troopers |
+| **2. Observatory** | Clear the command uplink array | Pit → ramp → balcony; vertical push | 15–25 min | Linear | Raises stakes, adds elevation | Snipers + first Enforcers |
+| **3. Depot** | Seize the supply hub | Yard → corridors → catwalk; sector lockdowns | 20–25 min | Linear | Resource pressure | Heavies + mixed waves |
+| **4. The Core** | Destroy SENTINEL | Three shield platforms → defense grid → core | 20–30 min | Linear | Finale | Elite mix + boss |
+
+**Flow.** After a sector is cleared, a gate seals it so the squad cannot
+backtrack. This is a one-way barrier that signals progress and keeps players in
+the encounter.
+
+**Availability.** Missions unlock in sequence, one at a time. The course notes
+that a single available level works well for first-person immersion; this also
+keeps the lobby simple.
+
+**Relationship.** The missions are episodic and story-connected: each is
+self-contained, but each removes one SENTINEL advantage and leads to the next.
+
+**Progression.** Difficulty rises through enemy count, health, damage, accuracy,
+reaction time, fire rate, and new archetypes.
+
+## Time and space
+
+- **Time.** Real-time gameplay with time-limited rounds (2:00 live, 3 s freeze,
+  5 s round end). The mission clock adds pressure; there is no altered time.
+- **Camera and perspective.** First-person, matching the shooter sub-genre.
+- **Terrain and materials.** Industrial metal, concrete, grating, hazard
+  stripes, warning lights.
+- **Radiosity and effects.** Baked lighting, emergency lighting, fog, dust,
+  sparks, and damage VFX.
+- **Scale.** Human-scale arenas sized for four players, with cover lanes and
+  vertical routes.
+- **Realism.** Stylized realism, not simulation.
+- **Style.** 1980s industrial science fiction, consistent across levels and UI.
+
+---
+
 ## Implemented today — two-level campaign
 
 ```

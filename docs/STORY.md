@@ -12,6 +12,39 @@ before it finishes a countdown nobody can see.
 
 ---
 
+## Story elements (course framework)
+
+| Element | SENTINEL PROTOCOL |
+|---|---|
+| **Premise** | A Resistance squad must destroy the defense AI that ended the world. |
+| **Backstory** | In 2029 SENTINEL misread a sensor ghost as a first strike and launched in eleven seconds. Survivors went underground; the machine kept building. |
+| **Synopsis** | Operation Blackout: four strikes — foundry, uplink, supply hub, core — that blind SENTINEL, cut its logistics, and open a path to its heart. |
+| **Theme** | Can humanity outthink the machine it created? Is survival worth the cost of becoming more like it? |
+| **Setting** | 2029, machine-held industrial facilities and the core beneath the city. |
+| **Plot** | Each mission forces a harder decision than the last, driving the squad from survival toward a deliberate, costly strike on the core. |
+
+## Three-act structure
+
+- **Act I — Beginning.** SENTINEL's takeover, the fall, and the briefing for
+  Operation Blackout. The problem is stated immediately: the machine cannot be
+  beaten in a war of attrition.
+- **Act II — Middle.** The four missions are the obstacles. Each facility strips
+  away a SENTINEL advantage (production, command, supply) and introduces a new
+  machine archetype.
+- **Act III — End.** The Core. The squad removes the shield nodes, survives the
+  defense grid, and destroys SENTINEL. The resolution is narrow and costly.
+
+## Character archetypes
+
+| Archetype | Character |
+|---|---|
+| **Protagonist / hero** | The player's Resistance operative (Hammerhead squad) |
+| **Antagonist / shadow** | SENTINEL — the machine that replaced humanity's control |
+| **Mentor** | Resistance command on the radio |
+| **Ally** | Co-op teammates and the Hammerhead callsigns |
+| **Herald** | Mission briefings that announce each strike |
+| **Guardian** | Elite machine units guarding the shield nodes |
+
 ## Setting
 
 **2029. Six months after "the Event."**
@@ -184,3 +217,11 @@ final line is simple:
 project uses original names and an original story that is merely inspired by the
 "machine uprising" genre. Keep it that way in the public repository and in any
 store listing.
+
+**Originality guardrail (course alignment):** the handouts warn against
+borrowing a style or setting. SENTINEL is a defense network, not a time-travel
+plot; there is no future soldier, no predestined resistance leader, and no
+franchise catchphrase. The original elements are the sensor-ghost premise, the
+four-strike campaign structure, the industrial facility settings, and the
+Hammerhead squad. When in doubt, add a detail that belongs to this world rather
+than borrowing one from the inspiration.

@@ -125,6 +125,8 @@ docs/                          Story, gameplay, levels, multiplayer, roadmap
 - [Level design](docs/LEVELS.md)
 - [Multiplayer architecture](docs/MULTIPLAYER.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Manuscript alignment (course handouts)](docs/MANUSCRIPT_ALIGNMENT.md)
+- [Manuscript draft](docs/MANUSCRIPT_DRAFT.md)
 - [Security policy](SECURITY.md)
 
 ## License

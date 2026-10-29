@@ -3,6 +3,36 @@
 Two game modes share the same project: the implemented single-player
 **Blackout Protocol** and the planned multiplayer **Sentinel Protocol**.
 
+## Design classification (course framework)
+
+| Element | SENTINEL PROTOCOL |
+|---|---|
+| **Goal** | Entertainment (primary) and social interaction (secondary) |
+| **Genre** | Action → shooter → first-person shooter (FPS); cooperative shooter |
+| **Platform** | Computer (PC) — Windows/Linux standalone build |
+| **Player mode** | LAN-based multiplayer, 1–4 players; single-player option |
+| **Time interval** | Real-time with time-limited rounds |
+| **Game theory** | Non-zero-sum — players cooperate against NPCs |
+| **Target audience** | Mid-core PC players, ~16–30, Philippines/SEA co-op groups |
+
+## Player motivation and market
+
+The design targets the motivations described in the course framework:
+
+- **Social interaction** — the primary draw: four friends cooperating on one objective.
+- **Competition** — score, round wins, and difficulty tiers provide a competitive edge without PvP.
+- **Mastery** — best-of-five rounds, four difficulty levels, and the boss reward improvement.
+- **Escapism** — the machine-uprising setting and the Resistance fantasy.
+- **Knowledge** — learning maps, bot patterns, and boss phases.
+
+**Audience persona.** A 16–30-year-old student or young professional in the
+Philippines or Southeast Asia who owns a Windows/Linux PC, plays first-person
+shooters casually with friends, has limited time per session, and prefers
+cooperative play over competitive ranked modes. The game is not designed for
+competitive esports, mobile players, or players who want a long progression
+grind. MBTI and generational categories are treated as optional audience
+context, not as design drivers.
+
 ---
 
 # 1. Blackout Protocol — single-player (implemented)
@@ -73,12 +103,51 @@ Per-mission `BotDifficultyProfile` (ScriptableObject):
 - weapon tier
 - archetype mix
 
-| Mission | Bots | Archetypes | Difficulty |
+| Mission | Bots | Archetypes | Mission role |
 |---|---|---|---|
-| FOUNDRY | 4 | Scout, Trooper | Recruit |
-| OBSERVATORY | 5 | Scout, Trooper, Sniper | Veteran |
-| DEPOT | 6 | Trooper, Heavy, Sniper | Elite |
-| THE CORE | 6 + boss | Elite mix + SENTINEL | Nightmare |
+| FOUNDRY | 4 | Scout, Trooper | Tutorial |
+| OBSERVATORY | 5 | Scout, Trooper, Sniper | Vertical combat |
+| DEPOT | 6 | Trooper, Heavy, Sniper | Attrition |
+| THE CORE | 6 + boss | Elite mix + SENTINEL | Finale |
+
+The counts above are the **Veteran** baseline. The lobby also offers
+**Recruit / Veteran / Elite / Nightmare**, scaling bot count, health, damage,
+accuracy, reaction time, and fire rate. This gives players a choice of
+difficulty instead of locking each mission to one setting.
+
+## Balance
+
+The design follows the five balance criteria from the course framework:
+
+- **Consistent challenge** — each mission adds one new pressure while keeping
+  the core round loop familiar.
+- **Perceivably fair** — bots telegraph attacks, spawn away from the squad, and
+  never appear inside walls; the squad always has cover and a retreat route.
+- **No stagnation** — the HUD always shows the objective and the next step; a
+  round never becomes unwinnable without a clear reason.
+- **No trivial decisions** — limited ammo and health make target priority,
+  positioning, and pickup timing matter.
+- **Difficulty levels** — Recruit / Veteran / Elite / Nightmare.
+
+## Interactivity modes
+
+- **Player-to-game** — first-person movement, aiming, shooting, reloading,
+  pickups, and HUD feedback.
+- **Player-to-player** — shared objective, callouts, pings, and optional voice
+  chat; dead players spectate and can coach.
+- **Player-to-developer** — the public repository's issue tracker, playtest
+  sessions, and patch notes.
+
+## Information model
+
+The cooperative mode uses **imperfect information**: enemy compass markers are
+disabled, so players must rely on sight, sound, and communication. The HUD shows
+only what the squad knows (objective, timer, alive count, score).
+
+## Accessibility
+
+Subtitles for briefings, remappable keys, mouse sensitivity and FOV settings,
+colorblind-friendly status indicators, and selectable difficulty.
 
 ## Score / progression
 
