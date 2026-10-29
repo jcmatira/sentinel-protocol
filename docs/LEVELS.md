@@ -66,8 +66,8 @@ Both levels are assembled entirely from the Microgame prefab kits
 1. Open Unity.
 2. Run **Tools ▸ Levels ▸ Setup Two-Level Campaign**.
    - Adds a configured `Game Mode Manager` to both scenes.
-   - Registers `Level02_Observatory` in Build Settings.
-3. Build Settings order:
+   - Registers `Level02_Observatory` in the Build Profiles scene list.
+3. Build Profiles scene list order:
    `IntroMenu, WinScene, LoseScene, Level01_Foundry, Level02_Observatory`.
 
 ---

@@ -6,11 +6,15 @@ How to test the LAN mode with one PC, and how to give the build to another PC.
 
 ## 1. Rebuild first
 
+> **Unity 6 note:** the old **File ▸ Build Settings** window is now
+> **File ▸ Build Profiles**. The scene list, target platform and Build button
+> all live in that window.
+
 The executable in the project root (`SentinelProtocol.x86_64`) was built
 **before Phase 0**, so it does not contain the LAN panel. Always rebuild after a
 code change.
 
-**File ▸ Build Settings** should list:
+**File ▸ Build Profiles** (Unity 6) should list:
 
 ```
 IntroMenu

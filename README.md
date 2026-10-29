@@ -77,7 +77,7 @@ Details: [docs/GAMEPLAY.md](docs/GAMEPLAY.md) ·
 3. Press **Play**.
 4. Recommended: run **Tools ▸ Levels ▸ Setup Two-Level Campaign** first. It saves
    the per-level mission settings into both scenes and registers
-   `Level02_Observatory` in the Build Settings.
+   `Level02_Observatory` in the Build Profiles scene list.
 
 ## LAN multiplayer (Phase 0)
 
@@ -96,7 +96,7 @@ spawning are Phase 1 work.
 
 ### Build
 
-**File ▸ Build Settings** should contain, in this order:
+**File ▸ Build Profiles** (Unity 6) should contain, in this order:
 
 ```
 IntroMenu
