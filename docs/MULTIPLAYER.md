@@ -64,6 +64,34 @@ single-player campaign.
 
 ---
 
+## Phase 2 status (implemented)
+
+- **Server-owned enemies:** clients disable the local enemy AI, navigation,
+  detection and weapons. The server sends enemy position/rotation/alive
+  snapshots at 10 Hz through NGO custom messages.
+- **Shared kills:** when a client kills its local enemy copy, it sends a kill
+  claim to the server. The server kills the authoritative enemy, which updates
+  the objective, score and kill count for everyone.
+- **Synced timer and score:** the server broadcasts `TimeRemaining`, `Kills` and
+  `Score` at 4 Hz. Clients stop ticking their own clock and display the
+  server's values.
+- **Shared mission endings:** the server loads the next level / WinScene /
+  LoseScene through `NetworkManager.SceneManager`, so every client follows.
+  Clients can no longer trigger a local end scene.
+- The client's `ObjectiveManager` is removed so a local objective completion
+  cannot desynchronise the match.
+
+### Phase 2 limitations
+
+- Player health and damage are **not** synced yet; the stock HUD still binds to
+  the disabled single-player Player, so health/ammo can look static.
+- Enemy animations, muzzle flashes and weapon effects are not replicated;
+  client-side enemies are frozen proxies moved by snapshots.
+- Join-in-progress after the mission starts is not supported.
+- The formal round/warmup system and the SENTINEL boss are still Phase 3/5.
+
+---
+
 ## 1. Goals
 
 - 1 host + up to 3 clients on the same network

@@ -38,7 +38,7 @@
 ## Phase 2 — Round loop
 
 - [ ] `RoundManager` state machine (freeze / live / round end)
-- [ ] Round timer and freeze timer
+- [x] Server-authoritative mission timer/score sync (freeze/round state still pending)
 - [ ] Round score and best-of-5 match score
 - [ ] Respawn all players at round start
 - [ ] Spectator camera for dead players
@@ -50,11 +50,11 @@
 ## Phase 3 — Bots
 
 - [ ] `BotDirector` spawns bots from spawn points
-- [ ] Server-only AI; clients see replicated bots
+- [x] Server-only AI; clients see replicated enemy snapshots
 - [ ] `BotDifficultyProfile` ScriptableObject
 - [ ] Scout / Trooper / Heavy / Sniper archetypes
 - [ ] Per-mission profiles
-- [ ] Round ends when the bot team is eliminated
+- [x] Server kill claims update the shared objective
 
 **Milestone:** four players clear a bot round on Foundry.
 

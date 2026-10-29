@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Netcode;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Unity.FPS.Game
@@ -56,7 +57,16 @@ namespace Unity.FPS.Game
                 // See if it's time to load the end scene (after the delay)
                 if (Time.time >= m_TimeLoadEndGameScene)
                 {
-                    SceneManager.LoadScene(m_SceneToLoad);
+                    if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening &&
+                        NetworkManager.Singleton.IsServer && NetworkManager.Singleton.SceneManager != null)
+                    {
+                        NetworkManager.Singleton.SceneManager.LoadScene(m_SceneToLoad, LoadSceneMode.Single);
+                    }
+                    else
+                    {
+                        SceneManager.LoadScene(m_SceneToLoad);
+                    }
+
                     GameIsEnding = false;
                 }
             }
@@ -67,6 +77,11 @@ namespace Unity.FPS.Game
 
         void EndGame(bool win)
         {
+            // In a network session only the server decides when the mission ends.
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening &&
+                !NetworkManager.Singleton.IsServer)
+                return;
+
             // unlocks the cursor before leaving the scene, to be able to click buttons
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;

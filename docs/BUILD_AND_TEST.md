@@ -123,16 +123,18 @@ networks. If it was dismissed, add an inbound rule for UDP 7777.
 
 ---
 
-## 4. Current Phase 1 scope
+## 4. Current Phase 2 scope
 
 - The host's **START** loads the mission through NGO; every connected client
   follows.
-- One networked player spawns per client at the level start. The players should
-  see each other and move independently.
-- **Bots, objectives, the mission timer and the HUD are still local** to each
-  peer. Killing bots on a client does not count on the server yet.
-- The stock HUD still binds to the disabled single-player Player, so health and
-  ammo may look static. Shared combat and objective progress are Phase 2/3.
+- One networked player spawns per client at the level start; players see each
+  other and move independently.
+- **Enemies are server-owned:** the server moves them and clients see snapshots.
+  Client kills are sent to the server as kill claims and count for everyone.
+- **Timer and score are synced** from the server. Finishing a mission loads the
+  next level / WinScene / LoseScene for every player through NGO.
+- **Still local:** player health/damage, enemy animations and weapon effects.
+  The stock HUD health/ammo may look static.
 
 ---
 

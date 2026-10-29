@@ -2,10 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using Unity.Collections;
+using Unity.FPS.AI;
+using Unity.FPS.Game;
 using Unity.FPS.Gameplay;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
 namespace Unity.FPS.Multiplayer
@@ -46,6 +50,19 @@ namespace Unity.FPS.Multiplayer
         int m_ApprovedClients;
         bool m_SceneEventsHooked;
 
+        const string k_EnemySnapshotMessage = "Sentinel_EnemySnapshot";
+        const string k_EnemyKillMessage = "Sentinel_EnemyKill";
+        const string k_GameStateMessage = "Sentinel_GameState";
+
+        readonly List<EnemyController> m_Enemies = new List<EnemyController>();
+        bool[] m_EnemyDead = Array.Empty<bool>();
+        GameModeManager m_GameMode;
+        string m_InitializedSceneName;
+        string m_PendingSceneInit;
+        float m_NextEnemySnapshotTime;
+        float m_NextGameStateTime;
+        bool m_ClientKillListenerRegistered;
+
         public static NetworkSession EnsureExists()
         {
             if (Instance != null)
@@ -81,6 +98,8 @@ namespace Unity.FPS.Multiplayer
         void OnDestroy()
         {
             UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnUnitySceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            UnregisterMessageHandlers();
 
             if (Instance == this)
                 Instance = null;
@@ -132,6 +151,8 @@ namespace Unity.FPS.Multiplayer
 
             UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnUnitySceneLoaded;
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnUnitySceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
 
         void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request,
@@ -182,7 +203,10 @@ namespace Unity.FPS.Multiplayer
             bool started = Manager.StartHost();
             SetStatus(started ? BuildStatus() : "Failed to host");
             if (started)
+            {
                 HookSceneEvents();
+                RegisterMessageHandlers();
+            }
             return started;
         }
 
@@ -206,7 +230,10 @@ namespace Unity.FPS.Multiplayer
             bool started = Manager.StartClient();
             SetStatus(started ? "Connecting to " + address + ":" + port + "..." : "Failed to start client");
             if (started)
+            {
                 HookSceneEvents();
+                RegisterMessageHandlers();
+            }
             return started;
         }
 
@@ -215,6 +242,7 @@ namespace Unity.FPS.Multiplayer
             if (Manager != null && Manager.IsListening)
                 Manager.Shutdown();
 
+            UnregisterMessageHandlers();
             m_ApprovedClients = 0;
             m_SceneEventsHooked = false;
             SetStatus("Offline");
@@ -263,6 +291,27 @@ namespace Unity.FPS.Multiplayer
             // but hooking here also covers a delayed initialization.
             if (!m_SceneEventsHooked && Manager != null && Manager.IsListening && Manager.SceneManager != null)
                 HookSceneEvents();
+
+            if (!string.IsNullOrEmpty(m_PendingSceneInit) && Manager != null && Manager.IsListening)
+                InitializeSceneState(m_PendingSceneInit);
+
+            if (Manager == null || !Manager.IsListening || !Manager.IsServer)
+                return;
+
+            if (string.IsNullOrEmpty(m_InitializedSceneName))
+                return;
+
+            if (Time.time >= m_NextGameStateTime)
+            {
+                SendGameState();
+                m_NextGameStateTime = Time.time + 0.25f;
+            }
+
+            if (Time.time >= m_NextEnemySnapshotTime)
+            {
+                SendEnemySnapshot();
+                m_NextEnemySnapshotTime = Time.time + 0.1f;
+            }
         }
 
         void OnUnitySceneLoaded(Scene scene, LoadSceneMode loadMode)
@@ -274,6 +323,8 @@ namespace Unity.FPS.Multiplayer
             // the NGO load event is processed later.
             if (!Manager.IsServer && scene.name != "IntroMenu")
                 DisableLocalScenePlayer();
+
+            InitializeSceneState(scene.name);
         }
 
         void OnSceneLoadCompleted(string sceneName, LoadSceneMode loadMode,
@@ -286,6 +337,8 @@ namespace Unity.FPS.Multiplayer
                 ServerSpawnPlayers();
             else
                 DisableLocalScenePlayer();
+
+            InitializeSceneState(sceneName);
         }
 
         void ServerSpawnPlayers()
@@ -379,6 +432,285 @@ namespace Unity.FPS.Multiplayer
                 for (int r = 0; r < renderers.Length; r++)
                     renderers[r].enabled = false;
             }
+        }
+
+        void RegisterMessageHandlers()
+        {
+            if (Manager == null || Manager.CustomMessagingManager == null)
+                return;
+
+            Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemySnapshotMessage);
+            Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemyKillMessage);
+            Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_GameStateMessage);
+
+            if (Manager.IsServer)
+            {
+                Manager.CustomMessagingManager.RegisterNamedMessageHandler(k_EnemyKillMessage, OnEnemyKillClaim);
+            }
+            else
+            {
+                Manager.CustomMessagingManager.RegisterNamedMessageHandler(k_EnemySnapshotMessage, OnEnemySnapshot);
+                Manager.CustomMessagingManager.RegisterNamedMessageHandler(k_GameStateMessage, OnGameState);
+
+                EventManager.RemoveListener<EnemyKillEvent>(OnClientEnemyKilled);
+                EventManager.AddListener<EnemyKillEvent>(OnClientEnemyKilled);
+                m_ClientKillListenerRegistered = true;
+            }
+        }
+
+        void UnregisterMessageHandlers()
+        {
+            if (Manager != null && Manager.CustomMessagingManager != null)
+            {
+                Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemySnapshotMessage);
+                Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemyKillMessage);
+                Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_GameStateMessage);
+            }
+
+            if (m_ClientKillListenerRegistered)
+            {
+                EventManager.RemoveListener<EnemyKillEvent>(OnClientEnemyKilled);
+                m_ClientKillListenerRegistered = false;
+            }
+        }
+
+        void OnSceneUnloaded(Scene scene)
+        {
+            m_InitializedSceneName = null;
+            m_PendingSceneInit = null;
+            m_GameMode = null;
+            m_Enemies.Clear();
+            m_EnemyDead = Array.Empty<bool>();
+        }
+
+        void InitializeSceneState(string sceneName)
+        {
+            if (Manager == null || !Manager.IsListening || string.IsNullOrEmpty(sceneName))
+                return;
+
+            if (sceneName == "IntroMenu" || sceneName == "WinScene" || sceneName == "LoseScene")
+                return;
+
+            if (m_InitializedSceneName == sceneName)
+                return;
+
+            GameModeManager gameMode = FindAnyObjectByType<GameModeManager>();
+            if (gameMode == null)
+            {
+                m_PendingSceneInit = sceneName;
+                return;
+            }
+
+            m_PendingSceneInit = null;
+            m_InitializedSceneName = sceneName;
+            m_GameMode = gameMode;
+            m_GameMode.SetAuthoritative(Manager.IsServer);
+
+            BuildEnemyList();
+
+            if (!Manager.IsServer)
+            {
+                DestroyObjectiveManager();
+                ConfigureClientEnemies();
+            }
+
+            m_NextEnemySnapshotTime = Time.time;
+            m_NextGameStateTime = Time.time;
+        }
+
+        void BuildEnemyList()
+        {
+            m_Enemies.Clear();
+            EnemyController[] enemies = FindObjectsByType<EnemyController>();
+            Array.Sort(enemies, CompareEnemies);
+            m_Enemies.AddRange(enemies);
+            m_EnemyDead = new bool[m_Enemies.Count];
+        }
+
+        static int CompareEnemies(EnemyController a, EnemyController b)
+        {
+            int byName = string.CompareOrdinal(a.gameObject.name, b.gameObject.name);
+            if (byName != 0)
+                return byName;
+
+            return a.transform.GetSiblingIndex().CompareTo(b.transform.GetSiblingIndex());
+        }
+
+        void DestroyObjectiveManager()
+        {
+            ObjectiveManager manager = FindAnyObjectByType<ObjectiveManager>();
+            if (manager != null)
+                Destroy(manager);
+        }
+
+        void ConfigureClientEnemies()
+        {
+            for (int i = 0; i < m_Enemies.Count; i++)
+            {
+                EnemyController enemy = m_Enemies[i];
+                if (enemy == null)
+                    continue;
+
+                enemy.enabled = false;
+                DisableComponents<EnemyMobile>(enemy.gameObject);
+                DisableComponents<EnemyTurret>(enemy.gameObject);
+                DisableComponents<NavigationModule>(enemy.gameObject);
+                DisableComponents<DetectionModule>(enemy.gameObject);
+                DisableComponents<NavMeshAgent>(enemy.gameObject);
+                DisableComponents<WeaponController>(enemy.gameObject);
+            }
+        }
+
+        static void DisableComponents<T>(GameObject root) where T : Behaviour
+        {
+            T[] components = root.GetComponentsInChildren<T>(true);
+            for (int i = 0; i < components.Length; i++)
+                components[i].enabled = false;
+        }
+
+        void OnClientEnemyKilled(EnemyKillEvent evt)
+        {
+            if (Manager == null || !Manager.IsListening || Manager.IsServer || evt.Enemy == null)
+                return;
+
+            int index = -1;
+            for (int i = 0; i < m_Enemies.Count; i++)
+            {
+                if (m_Enemies[i] != null && m_Enemies[i].gameObject == evt.Enemy)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index < 0 || m_EnemyDead[index])
+                return;
+
+            m_EnemyDead[index] = true;
+            SendKillClaim(index);
+        }
+
+        void SendKillClaim(int index)
+        {
+            if (Manager == null || Manager.CustomMessagingManager == null)
+                return;
+
+            using (FastBufferWriter writer = new FastBufferWriter(8, Allocator.Temp))
+            {
+                writer.WriteValueSafe(index);
+                Manager.CustomMessagingManager.SendNamedMessage(k_EnemyKillMessage,
+                    NetworkManager.ServerClientId, writer);
+            }
+        }
+
+        void OnEnemyKillClaim(ulong sender, FastBufferReader reader)
+        {
+            if (Manager == null || !Manager.IsServer)
+                return;
+
+            reader.ReadValueSafe(out int index);
+            if (index < 0 || index >= m_Enemies.Count)
+                return;
+
+            EnemyController enemy = m_Enemies[index];
+            if (enemy == null)
+                return;
+
+            Health health = enemy.GetComponent<Health>();
+            if (health != null && health.CurrentHealth > 0f)
+                health.Kill();
+        }
+
+        void SendEnemySnapshot()
+        {
+            if (Manager == null || !Manager.IsServer || Manager.CustomMessagingManager == null)
+                return;
+
+            if (m_Enemies.Count == 0)
+                return;
+
+            using (FastBufferWriter writer = new FastBufferWriter(1024, Allocator.Temp))
+            {
+                writer.WriteValueSafe(m_Enemies.Count);
+
+                for (int i = 0; i < m_Enemies.Count; i++)
+                {
+                    EnemyController enemy = m_Enemies[i];
+                    Health health = enemy != null ? enemy.GetComponent<Health>() : null;
+                    bool alive = enemy != null && (health == null || health.CurrentHealth > 0f);
+                    Vector3 position = alive ? enemy.transform.position : Vector3.zero;
+                    Quaternion rotation = alive ? enemy.transform.rotation : Quaternion.identity;
+
+                    writer.WriteValueSafe(position);
+                    writer.WriteValueSafe(rotation);
+                    writer.WriteValueSafe(alive);
+                }
+
+                Manager.CustomMessagingManager.SendNamedMessageToAll(k_EnemySnapshotMessage, writer,
+                    NetworkDelivery.Unreliable);
+            }
+        }
+
+        void OnEnemySnapshot(ulong sender, FastBufferReader reader)
+        {
+            if (Manager == null || Manager.IsServer)
+                return;
+
+            reader.ReadValueSafe(out int count);
+            for (int i = 0; i < count; i++)
+            {
+                reader.ReadValueSafe(out Vector3 position);
+                reader.ReadValueSafe(out Quaternion rotation);
+                reader.ReadValueSafe(out bool alive);
+
+                if (i >= m_Enemies.Count)
+                    continue;
+
+                EnemyController enemy = m_Enemies[i];
+                if (enemy == null)
+                    continue;
+
+                if (!alive || m_EnemyDead[i])
+                {
+                    if (enemy.gameObject.activeSelf)
+                        enemy.gameObject.SetActive(false);
+                    continue;
+                }
+
+                enemy.transform.SetPositionAndRotation(position, rotation);
+            }
+        }
+
+        void SendGameState()
+        {
+            if (Manager == null || !Manager.IsServer || m_GameMode == null ||
+                Manager.CustomMessagingManager == null)
+                return;
+
+            using (FastBufferWriter writer = new FastBufferWriter(64, Allocator.Temp))
+            {
+                writer.WriteValueSafe(m_GameMode.TimeRemaining);
+                writer.WriteValueSafe(m_GameMode.Kills);
+                writer.WriteValueSafe(m_GameMode.Score);
+                Manager.CustomMessagingManager.SendNamedMessageToAll(k_GameStateMessage, writer,
+                    NetworkDelivery.UnreliableSequenced);
+            }
+        }
+
+        void OnGameState(ulong sender, FastBufferReader reader)
+        {
+            if (Manager == null || Manager.IsServer)
+                return;
+
+            reader.ReadValueSafe(out float timeRemaining);
+            reader.ReadValueSafe(out int kills);
+            reader.ReadValueSafe(out int score);
+
+            if (m_GameMode == null)
+                m_GameMode = FindAnyObjectByType<GameModeManager>();
+
+            if (m_GameMode != null)
+                m_GameMode.ApplyNetworkState(timeRemaining, kills, score);
         }
 
         string BuildStatus()

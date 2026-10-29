@@ -105,6 +105,22 @@ namespace Unity.FPS.Gameplay
 
         public bool IsRunning => CurrentOutcome == Outcome.InProgress;
 
+        /// <summary>
+        /// False on networked clients: the server owns the clock, score and loss condition,
+        /// and the client only displays the replicated values.
+        /// </summary>
+        public bool IsAuthoritative { get; private set; } = true;
+
+        public void SetAuthoritative(bool authoritative) => IsAuthoritative = authoritative;
+
+        /// <summary>Applies the server's authoritative mission state to a client.</summary>
+        public void ApplyNetworkState(float timeRemaining, int kills, int score)
+        {
+            TimeRemaining = Mathf.Max(0f, timeRemaining);
+            Kills = kills;
+            Score = score;
+        }
+
         /// <summary>Text shown as the level heading on the HUD and intro banner.</summary>
         public string LevelLabel => "LEVEL " + LevelNumber + " · " + LevelName;
 
@@ -221,7 +237,7 @@ namespace Unity.FPS.Gameplay
 
         void Update()
         {
-            if (!IsRunning)
+            if (!IsAuthoritative || !IsRunning)
                 return;
 
             TimeRemaining -= Time.deltaTime;
@@ -235,7 +251,7 @@ namespace Unity.FPS.Gameplay
 
         void OnEnemyKilled(EnemyKillEvent evt)
         {
-            if (!IsRunning)
+            if (!IsAuthoritative || !IsRunning)
                 return;
 
             Kills++;
@@ -251,7 +267,7 @@ namespace Unity.FPS.Gameplay
 
         void OnAllObjectivesCompleted(AllObjectivesCompletedEvent evt)
         {
-            if (!IsRunning)
+            if (!IsAuthoritative || !IsRunning)
                 return;
 
             // the stock "Eliminate all the enemies" objective was completed -> that is our victory condition
@@ -273,7 +289,7 @@ namespace Unity.FPS.Gameplay
 
         void Defeat(EndReason reason)
         {
-            if (!IsRunning)
+            if (!IsAuthoritative || !IsRunning)
                 return;
 
             CurrentOutcome = Outcome.Defeat;
