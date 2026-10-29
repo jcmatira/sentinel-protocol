@@ -105,7 +105,8 @@ namespace Unity.FPS.Multiplayer
             GameObject playerPrefab = Resources.Load<GameObject>(PlayerPrefabResourcePath);
             if (playerPrefab != null)
             {
-                Manager.NetworkConfig.PlayerPrefab = playerPrefab;
+                // Register the prefab for manual spawning after a mission scene loads.
+                // PlayerPrefab is intentionally left null so no avatar spawns in the menu.
                 Manager.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = playerPrefab });
             }
             else
@@ -350,11 +351,13 @@ namespace Unity.FPS.Multiplayer
                 CharacterController controller = player.GetComponent<CharacterController>();
                 if (controller != null) controller.enabled = false;
 
-                Camera camera = player.GetComponentInChildren<Camera>(true);
-                if (camera != null) camera.gameObject.SetActive(false);
+                Camera[] cameras = player.GetComponentsInChildren<Camera>(true);
+                for (int c = 0; c < cameras.Length; c++)
+                    cameras[c].gameObject.SetActive(false);
 
-                AudioListener listener = player.GetComponentInChildren<AudioListener>(true);
-                if (listener != null) listener.enabled = false;
+                AudioListener[] listeners = player.GetComponentsInChildren<AudioListener>(true);
+                for (int l = 0; l < listeners.Length; l++)
+                    listeners[l].enabled = false;
 
                 Renderer[] renderers = player.GetComponentsInChildren<Renderer>(true);
                 for (int r = 0; r < renderers.Length; r++)
