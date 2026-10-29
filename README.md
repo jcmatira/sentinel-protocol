@@ -87,6 +87,10 @@ Details: [docs/GAMEPLAY.md](docs/GAMEPLAY.md) ·
 4. Click **HOST** in one instance; in a second instance enter the host IP and
    click **JOIN**. The panel shows the connected player count (up to 4).
 
+Only one PC? Run the build **twice** and join `127.0.0.1` in the second window.
+Full instructions (including how to copy the build to another PC):
+[Build & multiplayer test guide](docs/BUILD_AND_TEST.md).
+
 Phase 0 verifies connectivity only. Networked mission loading and player
 spawning are Phase 1 work.
 
@@ -137,6 +141,7 @@ docs/                          Story, gameplay, levels, multiplayer, roadmap
 - [Gameplay design](docs/GAMEPLAY.md)
 - [Level design](docs/LEVELS.md)
 - [Multiplayer architecture](docs/MULTIPLAYER.md)
+- [Build & multiplayer test guide](docs/BUILD_AND_TEST.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Manuscript alignment (course handouts)](docs/MANUSCRIPT_ALIGNMENT.md)
 - [Manuscript draft](docs/MANUSCRIPT_DRAFT.md)
