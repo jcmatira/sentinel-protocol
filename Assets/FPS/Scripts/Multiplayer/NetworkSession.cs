@@ -61,24 +61,42 @@ namespace Unity.FPS.Multiplayer
 
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            CreateManager();
+
+            try
+            {
+                CreateManager();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                Debug.LogError("[Network] Could not create the NetworkManager. Host/join is unavailable.");
+                Destroy(gameObject);
+            }
         }
 
         void OnDestroy()
         {
             if (Instance == this)
                 Instance = null;
+
+            if (Manager != null)
+                Destroy(Manager.gameObject);
         }
 
         void CreateManager()
         {
             // Built inactive so the NetworkConfig is fully set before NetworkManager.Awake runs.
+            // The NetworkManager must be a root object: NGO does not support nested managers.
             GameObject go = new GameObject("Network Manager");
             go.SetActive(false);
-            go.transform.SetParent(transform, false);
 
             Manager = go.AddComponent<NetworkManager>();
             Transport = go.AddComponent<UnityTransport>();
+
+            // A NetworkManager added at runtime does not get a serialized NetworkConfig,
+            // so create one before touching any configuration.
+            if (Manager.NetworkConfig == null)
+                Manager.NetworkConfig = new NetworkConfig();
 
             GameObject playerPrefab = Resources.Load<GameObject>(PlayerPrefabResourcePath);
             if (playerPrefab != null)
@@ -103,6 +121,7 @@ namespace Unity.FPS.Multiplayer
             Manager.OnTransportFailure += OnTransportFailure;
 
             go.SetActive(true);
+            DontDestroyOnLoad(go);
         }
 
         void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request,

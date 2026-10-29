@@ -25,6 +25,11 @@ crashlytics-build.properties
 # =============================================================================
 # Build output (Linux standalone build that currently sits in the project root)
 # =============================================================================
+/linux/
+/windows/
+/mac/
+/Builds/
+/builds/
 /*_Data/
 /*_BackUpThisFolder_ButDontShipItWithYourGame/
 /*.x86_64
