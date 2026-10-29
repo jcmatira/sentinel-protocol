@@ -1,0 +1,40 @@
+# Normalize line endings, but treat Unity serialized assets as text
+* text=auto
+
+*.cs        text diff=csharp
+*.shader    text
+*.cginc     text
+*.hlsl      text
+*.compute   text
+*.unity     text
+*.prefab    text
+*.asset     text
+*.mat       text
+*.meta      text
+*.json      text
+*.md        text
+*.txt       text
+*.asmdef    text
+*.gitignore text
+
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.tga       binary
+*.psd       binary
+*.exr       binary
+*.hdr       binary
+*.fbx       binary
+*.obj       binary
+*.blend     binary
+*.wav       binary
+*.mp3       binary
+*.ogg       binary
+*.dll       binary
+*.so        binary
+*.dylib     binary
+
+# Unity YAML merge (optional, needs UnityYAMLMerge configured locally):
+# *.unity   merge=unityyamlmerge
+# *.prefab  merge=unityyamlmerge
+# *.asset   merge=unityyamlmerge
