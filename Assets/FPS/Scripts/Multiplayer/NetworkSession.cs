@@ -80,6 +80,8 @@ namespace Unity.FPS.Multiplayer
 
         void OnDestroy()
         {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnUnitySceneLoaded;
+
             if (Instance == this)
                 Instance = null;
 
@@ -127,6 +129,9 @@ namespace Unity.FPS.Multiplayer
 
             go.SetActive(true);
             DontDestroyOnLoad(go);
+
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnUnitySceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnUnitySceneLoaded;
         }
 
         void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request,
@@ -258,6 +263,17 @@ namespace Unity.FPS.Multiplayer
             // but hooking here also covers a delayed initialization.
             if (!m_SceneEventsHooked && Manager != null && Manager.IsListening && Manager.SceneManager != null)
                 HookSceneEvents();
+        }
+
+        void OnUnitySceneLoaded(Scene scene, LoadSceneMode loadMode)
+        {
+            if (Manager == null || !Manager.IsListening)
+                return;
+
+            // Clients: make sure the level's single-player Player is disabled even if
+            // the NGO load event is processed later.
+            if (!Manager.IsServer && scene.name != "IntroMenu")
+                DisableLocalScenePlayer();
         }
 
         void OnSceneLoadCompleted(string sceneName, LoadSceneMode loadMode,
