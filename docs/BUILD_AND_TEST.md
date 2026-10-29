@@ -123,13 +123,16 @@ networks. If it was dismissed, add an inbound rule for UDP 7777.
 
 ---
 
-## 4. Current Phase 0 limits
+## 4. Current Phase 1 scope
 
-- No player avatars spawn yet (`SpawnPlayerAvatars = false`).
-- The **START** button still loads the mission locally; clients are not taken to
-  the mission with the host until networked scene loading lands in Phase 1.
-- Host/join is the Phase 0 test: both instances should agree on the player count
-  and disconnect cleanly.
+- The host's **START** loads the mission through NGO; every connected client
+  follows.
+- One networked player spawns per client at the level start. The players should
+  see each other and move independently.
+- **Bots, objectives, the mission timer and the HUD are still local** to each
+  peer. Killing bots on a client does not count on the server yet.
+- The stock HUD still binds to the disabled single-player Player, so health and
+  ammo may look static. Shared combat and objective progress are Phase 2/3.
 
 ---
 

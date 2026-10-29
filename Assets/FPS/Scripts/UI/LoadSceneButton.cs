@@ -1,4 +1,5 @@
 ﻿using Unity.FPS.Game;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -29,6 +30,19 @@ namespace Unity.FPS.UI
 
         public void LoadTargetScene()
         {
+            // In a LAN session only the host may change scenes; NGO takes every client with it.
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            {
+                if (!NetworkManager.Singleton.IsServer)
+                    return;
+
+                if (NetworkManager.Singleton.SceneManager != null)
+                {
+                    NetworkManager.Singleton.SceneManager.LoadScene(SceneName, LoadSceneMode.Single);
+                    return;
+                }
+            }
+
             SceneManager.LoadScene(SceneName);
         }
     }

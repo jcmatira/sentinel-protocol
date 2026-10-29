@@ -40,6 +40,30 @@ single-player campaign.
 
 ---
 
+## Phase 1 status (implemented)
+
+- The host's **START** button now loads the mission through
+  `NetworkManager.SceneManager`; every connected client follows automatically.
+- The level's single-player `Player` is stripped at runtime (controller, input,
+  camera, audio and visuals disabled) and one **NetworkPlayer** is spawned per
+  connected client at the level's original spawn point.
+- `NetworkTransform` uses **owner authority**: each client moves its own player
+  and sees the others through replication.
+- Only the owning client keeps the camera, audio listener, input, movement and
+  weapons; remote copies are visual proxies.
+- The network player prefab is created automatically at
+  `Assets/FPS/Resources/Network/Player_Networked.prefab`.
+
+### Phase 1 limitations
+
+- Bots, objectives, the mission timer and the game HUD are still **local** to
+  each peer. Killing bots on a client does not count on the server yet.
+- The stock HUD still binds to the disabled single-player Player, so health and
+  ammo may look static.
+- Enemy replication, shared objective progress and the round system are Phase 2/3.
+
+---
+
 ## 1. Goals
 
 - 1 host + up to 3 clients on the same network

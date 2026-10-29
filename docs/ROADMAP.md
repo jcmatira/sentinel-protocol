@@ -26,12 +26,12 @@
 ## Phase 1 — Networking foundation
 
 - [ ] `NetworkManager` + Unity Transport
-- [ ] Player prefab as `NetworkObject`
-- [ ] `NetworkTransform` (owner authority)
-- [ ] Spawn points for 4 players
-- [ ] Enable movement/input only on the local owner
-- [ ] Remote player proxies (no camera, no input, no audio listener)
-- [ ] Test with 2–4 virtual players
+- [x] Player prefab as `NetworkObject`
+- [x] `NetworkTransform` (owner authority)
+- [x] Spawn points (level player position + offsets)
+- [x] Enable movement/input only on the local owner
+- [x] Remote player proxies (no camera, no input, no audio listener)
+- [ ] Test with 2–4 virtual players (rebuild + LAN test)
 
 **Milestone:** four players can join one mission and move around together.
 

@@ -5,8 +5,9 @@
 >
 > Built on the Unity **FPS Microgame** template.
 
-> **Status:** single-player campaign implemented · LAN multiplayer **Phase 0**
-> (host/join) implemented. See [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** single-player campaign implemented · LAN multiplayer **Phase 1**
+> (host/join + networked level load + player avatars) implemented.
+> See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 

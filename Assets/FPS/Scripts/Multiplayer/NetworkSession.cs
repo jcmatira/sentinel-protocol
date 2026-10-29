@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using Unity.FPS.Gameplay;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Unity.FPS.Multiplayer
 {
@@ -41,6 +44,7 @@ namespace Unity.FPS.Multiplayer
         public bool SpawnPlayerAvatars = false;
 
         int m_ApprovedClients;
+        bool m_SceneEventsHooked;
 
         public static NetworkSession EnsureExists()
         {
@@ -171,6 +175,8 @@ namespace Unity.FPS.Multiplayer
 
             bool started = Manager.StartHost();
             SetStatus(started ? BuildStatus() : "Failed to host");
+            if (started)
+                HookSceneEvents();
             return started;
         }
 
@@ -193,6 +199,8 @@ namespace Unity.FPS.Multiplayer
 
             bool started = Manager.StartClient();
             SetStatus(started ? "Connecting to " + address + ":" + port + "..." : "Failed to start client");
+            if (started)
+                HookSceneEvents();
             return started;
         }
 
@@ -202,7 +210,156 @@ namespace Unity.FPS.Multiplayer
                 Manager.Shutdown();
 
             m_ApprovedClients = 0;
+            m_SceneEventsHooked = false;
             SetStatus("Offline");
+        }
+
+        /// <summary>
+        /// Loads a mission scene through NGO. Only the host may call this; clients follow automatically.
+        /// </summary>
+        public bool LoadMissionScene(string sceneName)
+        {
+            if (Manager == null || !Manager.IsListening)
+            {
+                SetStatus("Start a session first");
+                return false;
+            }
+
+            if (!Manager.IsServer)
+            {
+                SetStatus("Only the host can start the mission");
+                return false;
+            }
+
+            if (Manager.SceneManager == null)
+            {
+                SetStatus("Scene manager is not ready");
+                return false;
+            }
+
+            Manager.SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
+            return true;
+        }
+
+        void HookSceneEvents()
+        {
+            if (Manager == null || Manager.SceneManager == null)
+                return;
+
+            Manager.SceneManager.OnLoadEventCompleted -= OnSceneLoadCompleted;
+            Manager.SceneManager.OnLoadEventCompleted += OnSceneLoadCompleted;
+            m_SceneEventsHooked = true;
+        }
+
+        void Update()
+        {
+            // StartHost/StartClient normally create the scene manager synchronously,
+            // but hooking here also covers a delayed initialization.
+            if (!m_SceneEventsHooked && Manager != null && Manager.IsListening && Manager.SceneManager != null)
+                HookSceneEvents();
+        }
+
+        void OnSceneLoadCompleted(string sceneName, LoadSceneMode loadMode,
+            List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+        {
+            if (Manager == null || !Manager.IsListening)
+                return;
+
+            if (Manager.IsServer)
+                ServerSpawnPlayers();
+            else
+                DisableLocalScenePlayer();
+        }
+
+        void ServerSpawnPlayers()
+        {
+            GameObject prefab = Resources.Load<GameObject>(PlayerPrefabResourcePath);
+            if (prefab == null)
+            {
+                Debug.LogError("[Network] Cannot spawn players: no prefab at Resources/" +
+                               PlayerPrefabResourcePath + ". Run Tools > Multiplayer > Setup Network Player Prefab.");
+                return;
+            }
+
+            Vector3 origin;
+            Quaternion rotation;
+            FindScenePlayer(out origin, out rotation);
+
+            // The level ships with a single-player Player prefab instance. In a network
+            // session that copy is replaced by one spawned NetworkObject per client.
+            DisableLocalScenePlayer();
+
+            int index = 0;
+            foreach (ulong clientId in Manager.ConnectedClientsIds)
+            {
+                Vector3 offset = new Vector3((index % 2) * 1.5f, 0f, (index / 2) * 1.5f);
+                GameObject instance = Instantiate(prefab, origin + offset, rotation);
+                NetworkObject networkObject = instance.GetComponent<NetworkObject>();
+
+                if (networkObject == null)
+                {
+                    Debug.LogError("[Network] The network player prefab has no NetworkObject component.");
+                    Destroy(instance);
+                    continue;
+                }
+
+                networkObject.SpawnWithOwnership(clientId, true);
+                index++;
+            }
+        }
+
+        PlayerCharacterController FindScenePlayer(out Vector3 position, out Quaternion rotation)
+        {
+            position = Vector3.zero;
+            rotation = Quaternion.identity;
+
+            PlayerCharacterController[] players = FindObjectsByType<PlayerCharacterController>();
+            for (int i = 0; i < players.Length; i++)
+            {
+                if (players[i].GetComponent<NetworkObject>() == null)
+                {
+                    position = players[i].transform.position;
+                    rotation = players[i].transform.rotation;
+                    return players[i];
+                }
+            }
+
+            return null;
+        }
+
+        void DisableLocalScenePlayer()
+        {
+            // Keep the level's single-player Player GameObject alive (the HUD holds
+            // references to it) but strip its controls, camera, audio and visuals.
+            // The spawned NetworkPlayers replace it visually.
+            PlayerCharacterController[] players = FindObjectsByType<PlayerCharacterController>();
+            for (int i = 0; i < players.Length; i++)
+            {
+                PlayerCharacterController player = players[i];
+                if (player.GetComponent<NetworkObject>() != null)
+                    continue;
+
+                player.enabled = false;
+
+                PlayerInputHandler input = player.GetComponent<PlayerInputHandler>();
+                if (input != null) input.enabled = false;
+
+                PlayerWeaponsManager weapons = player.GetComponent<PlayerWeaponsManager>();
+                if (weapons != null) weapons.enabled = false;
+
+                CharacterController controller = player.GetComponent<CharacterController>();
+                if (controller != null) controller.enabled = false;
+
+                Camera camera = player.GetComponentInChildren<Camera>(true);
+                if (camera != null) camera.gameObject.SetActive(false);
+
+                AudioListener listener = player.GetComponentInChildren<AudioListener>(true);
+                if (listener != null) listener.enabled = false;
+
+                Renderer[] renderers = player.GetComponentsInChildren<Renderer>(true);
+                for (int r = 0; r < renderers.Length; r++)
+                    renderers[r].enabled = false;
+            }
         }
 
         string BuildStatus()
