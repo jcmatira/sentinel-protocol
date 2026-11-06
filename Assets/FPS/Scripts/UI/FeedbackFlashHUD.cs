@@ -47,24 +47,18 @@ namespace Unity.FPS.UI
 
         void Start()
         {
-            // Subscribe to player damage events
-            PlayerCharacterController playerCharacterController = FindAnyObjectByType<PlayerCharacterController>();
-            DebugUtility.HandleErrorIfNullFindObject<PlayerCharacterController, FeedbackFlashHUD>(
-                playerCharacterController, this);
-
-            m_PlayerHealth = playerCharacterController.GetComponent<Health>();
-            DebugUtility.HandleErrorIfNullGetComponent<Health, FeedbackFlashHUD>(m_PlayerHealth, this,
-                playerCharacterController.gameObject);
-
             m_GameFlowManager = FindAnyObjectByType<GameFlowManager>();
             DebugUtility.HandleErrorIfNullFindObject<GameFlowManager, FeedbackFlashHUD>(m_GameFlowManager, this);
 
-            m_PlayerHealth.OnDamaged += OnTakeDamage;
-            m_PlayerHealth.OnHealed += OnHealed;
+            TryBind();
         }
 
         void Update()
         {
+            // The local networked player can spawn a frame or two after the HUD.
+            if (m_PlayerHealth == null && !TryBind())
+                return;
+
             if (m_PlayerHealth.IsCritical())
             {
                 VignetteCanvasGroup.gameObject.SetActive(true);
@@ -72,7 +66,7 @@ namespace Unity.FPS.UI
                     (1 - (m_PlayerHealth.CurrentHealth / m_PlayerHealth.MaxHealth /
                           m_PlayerHealth.CriticalHealthRatio)) * CriticaHealthVignetteMaxAlpha;
 
-                if (m_GameFlowManager.GameIsEnding)
+                if (m_GameFlowManager != null && m_GameFlowManager.GameIsEnding)
                     VignetteCanvasGroup.alpha = vignetteAlpha;
                 else
                     VignetteCanvasGroup.alpha =
@@ -98,6 +92,40 @@ namespace Unity.FPS.UI
                     FlashCanvasGroup.gameObject.SetActive(false);
                     m_FlashActive = false;
                 }
+            }
+        }
+
+        bool TryBind()
+        {
+            PlayerCharacterController player = LocalPlayerLocator.Find();
+            if (player == null)
+                return false;
+
+            Health health = player.GetComponent<Health>();
+            if (health == null)
+                return false;
+
+            if (m_PlayerHealth == health)
+                return true;
+
+            if (m_PlayerHealth != null)
+            {
+                m_PlayerHealth.OnDamaged -= OnTakeDamage;
+                m_PlayerHealth.OnHealed -= OnHealed;
+            }
+
+            m_PlayerHealth = health;
+            m_PlayerHealth.OnDamaged += OnTakeDamage;
+            m_PlayerHealth.OnHealed += OnHealed;
+            return true;
+        }
+
+        void OnDestroy()
+        {
+            if (m_PlayerHealth != null)
+            {
+                m_PlayerHealth.OnDamaged -= OnTakeDamage;
+                m_PlayerHealth.OnHealed -= OnHealed;
             }
         }
 

@@ -128,13 +128,27 @@ networks. If it was dismissed, add an inbound rule for UDP 7777.
 - The host's **START** loads the mission through NGO; every connected client
   follows.
 - One networked player spawns per client at the level start; players see each
-  other and move independently.
-- **Enemies are server-owned:** the server moves them and clients see snapshots.
-  Client kills are sent to the server as kill claims and count for everyone.
+  other, move independently and show a visible robot avatar (the Microgame
+  player has no third-person mesh, so remote copies build one at runtime).
+- **Enemies are server-owned:** the server moves them and clients see
+  position/health snapshots. Client hits and kills are sent to the server, so
+  enemy health bars match on every screen.
 - **Timer and score are synced** from the server. Finishing a mission loads the
   next level / WinScene / LoseScene for every player through NGO.
+- **HUD is per-client:** the crosshair, health, ammo, stance, jetpack, compass
+  and pause menu bind to the player owned by that machine, not the stripped
+  single-player Player.
 - **Still local:** player health/damage, enemy animations and weapon effects.
-  The stock HUD health/ammo may look static.
+
+### Two-machine smoke test
+
+1. Host + client join in `IntroMenu`, then the host presses **START**.
+2. Each player sees the other as a dark robot with a cyan visor, not just a
+   shadow.
+3. Both screens show a crosshair, health bar, ammo counter and compass.
+4. Shoot an enemy on one PC: its floating health bar drops on **both** screens,
+   and the kill count/timer stay in step.
+5. Clearing the mission sends both players to the next level together.
 
 ---
 

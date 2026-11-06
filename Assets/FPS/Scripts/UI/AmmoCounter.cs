@@ -61,7 +61,8 @@ namespace Unity.FPS.UI
             }
         }
 
-        public void Initialize(WeaponController weapon, int weaponIndex)
+        public void Initialize(WeaponController weapon, int weaponIndex,
+            PlayerWeaponsManager playerWeaponsManager)
         {
             m_Weapon = weapon;
             WeaponCounterIndex = weaponIndex;
@@ -72,7 +73,7 @@ namespace Unity.FPS.UI
                 BulletCounter.text = weapon.GetCarriedPhysicalBullets().ToString();
 
             Reload.gameObject.SetActive(false);
-            m_PlayerWeaponsManager = FindAnyObjectByType<PlayerWeaponsManager>();
+            m_PlayerWeaponsManager = playerWeaponsManager;
             DebugUtility.HandleErrorIfNullFindObject<PlayerWeaponsManager, AmmoCounter>(m_PlayerWeaponsManager, this);
 
             WeaponIndexText.text = (WeaponCounterIndex + 1).ToString();

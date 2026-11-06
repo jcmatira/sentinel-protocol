@@ -52,6 +52,7 @@ namespace Unity.FPS.Multiplayer
 
         const string k_EnemySnapshotMessage = "Sentinel_EnemySnapshot";
         const string k_EnemyKillMessage = "Sentinel_EnemyKill";
+        const string k_EnemyDamageMessage = "Sentinel_EnemyDamage";
         const string k_GameStateMessage = "Sentinel_GameState";
 
         readonly List<EnemyController> m_Enemies = new List<EnemyController>();
@@ -441,11 +442,13 @@ namespace Unity.FPS.Multiplayer
 
             Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemySnapshotMessage);
             Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemyKillMessage);
+            Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemyDamageMessage);
             Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_GameStateMessage);
 
             if (Manager.IsServer)
             {
                 Manager.CustomMessagingManager.RegisterNamedMessageHandler(k_EnemyKillMessage, OnEnemyKillClaim);
+                Manager.CustomMessagingManager.RegisterNamedMessageHandler(k_EnemyDamageMessage, OnEnemyDamageClaim);
             }
             else
             {
@@ -464,6 +467,7 @@ namespace Unity.FPS.Multiplayer
             {
                 Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemySnapshotMessage);
                 Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemyKillMessage);
+                Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_EnemyDamageMessage);
                 Manager.CustomMessagingManager.UnregisterNamedMessageHandler(k_GameStateMessage);
             }
 
@@ -529,11 +533,31 @@ namespace Unity.FPS.Multiplayer
 
         static int CompareEnemies(EnemyController a, EnemyController b)
         {
+            // The index in this list is the wire ID for snapshots and damage claims, so
+            // both peers must build it in the exact same order. The full hierarchy path
+            // is stable even when two enemies share a name or a sibling index.
             int byName = string.CompareOrdinal(a.gameObject.name, b.gameObject.name);
             if (byName != 0)
                 return byName;
 
+            int byPath = string.CompareOrdinal(GetHierarchyPath(a.transform), GetHierarchyPath(b.transform));
+            if (byPath != 0)
+                return byPath;
+
             return a.transform.GetSiblingIndex().CompareTo(b.transform.GetSiblingIndex());
+        }
+
+        static string GetHierarchyPath(Transform transform)
+        {
+            string path = transform.name;
+            Transform current = transform.parent;
+            while (current != null)
+            {
+                path = current.name + "/" + path;
+                current = current.parent;
+            }
+
+            return path;
         }
 
         void DestroyObjectiveManager()
@@ -558,7 +582,47 @@ namespace Unity.FPS.Multiplayer
                 DisableComponents<DetectionModule>(enemy.gameObject);
                 DisableComponents<NavMeshAgent>(enemy.gameObject);
                 DisableComponents<WeaponController>(enemy.gameObject);
+
+                // EnemyController is disabled before its Start runs, so it never subscribes
+                // to Health. Subscribe here instead: this is what forwards client damage
+                // and kills to the server.
+                Health health = enemy.GetComponent<Health>();
+                if (health != null)
+                {
+                    int index = i;
+                    health.OnDamaged += (damage, source) => OnClientEnemyDamaged(index, damage);
+                    health.OnDie += () => OnClientEnemyDied(index);
+                }
             }
+        }
+
+        void OnClientEnemyDamaged(int index, float damage)
+        {
+            if (Manager == null || !Manager.IsListening || Manager.IsServer || damage <= 0f)
+                return;
+
+            if (index < 0 || index >= m_EnemyDead.Length || m_EnemyDead[index])
+                return;
+
+            using (FastBufferWriter writer = new FastBufferWriter(16, Allocator.Temp))
+            {
+                writer.WriteValueSafe(index);
+                writer.WriteValueSafe(damage);
+                Manager.CustomMessagingManager.SendNamedMessage(k_EnemyDamageMessage,
+                    NetworkManager.ServerClientId, writer, NetworkDelivery.ReliableSequenced);
+            }
+        }
+
+        void OnClientEnemyDied(int index)
+        {
+            if (Manager == null || !Manager.IsListening || Manager.IsServer)
+                return;
+
+            if (index < 0 || index >= m_EnemyDead.Length || m_EnemyDead[index])
+                return;
+
+            m_EnemyDead[index] = true;
+            SendKillClaim(index);
         }
 
         static void DisableComponents<T>(GameObject root) where T : Behaviour
@@ -603,6 +667,32 @@ namespace Unity.FPS.Multiplayer
             }
         }
 
+        void OnEnemyDamageClaim(ulong sender, FastBufferReader reader)
+        {
+            if (Manager == null || !Manager.IsServer)
+                return;
+
+            reader.ReadValueSafe(out int index);
+            reader.ReadValueSafe(out float damage);
+
+            if (index < 0 || index >= m_Enemies.Count)
+                return;
+
+            EnemyController enemy = m_Enemies[index];
+            if (enemy == null)
+                return;
+
+            Health health = enemy.GetComponent<Health>();
+            if (health == null || health.CurrentHealth <= 0f)
+                return;
+
+            // Clamp to the enemy's maximum so a malformed or modified client cannot
+            // one-shot the whole encounter with a huge value.
+            damage = Mathf.Clamp(damage, 0f, health.MaxHealth);
+            if (damage > 0f)
+                health.TakeDamage(damage, null);
+        }
+
         void OnEnemyKillClaim(ulong sender, FastBufferReader reader)
         {
             if (Manager == null || !Manager.IsServer)
@@ -629,7 +719,8 @@ namespace Unity.FPS.Multiplayer
             if (m_Enemies.Count == 0)
                 return;
 
-            using (FastBufferWriter writer = new FastBufferWriter(1024, Allocator.Temp))
+            using (FastBufferWriter writer =
+                new FastBufferWriter(64 + m_Enemies.Count * 64, Allocator.Temp))
             {
                 writer.WriteValueSafe(m_Enemies.Count);
 
@@ -640,10 +731,12 @@ namespace Unity.FPS.Multiplayer
                     bool alive = enemy != null && (health == null || health.CurrentHealth > 0f);
                     Vector3 position = alive ? enemy.transform.position : Vector3.zero;
                     Quaternion rotation = alive ? enemy.transform.rotation : Quaternion.identity;
+                    float currentHealth = alive && health != null ? health.CurrentHealth : 0f;
 
                     writer.WriteValueSafe(position);
                     writer.WriteValueSafe(rotation);
                     writer.WriteValueSafe(alive);
+                    writer.WriteValueSafe(currentHealth);
                 }
 
                 Manager.CustomMessagingManager.SendNamedMessageToAll(k_EnemySnapshotMessage, writer,
@@ -662,6 +755,7 @@ namespace Unity.FPS.Multiplayer
                 reader.ReadValueSafe(out Vector3 position);
                 reader.ReadValueSafe(out Quaternion rotation);
                 reader.ReadValueSafe(out bool alive);
+                reader.ReadValueSafe(out float currentHealth);
 
                 if (i >= m_Enemies.Count)
                     continue;
@@ -670,12 +764,22 @@ namespace Unity.FPS.Multiplayer
                 if (enemy == null)
                     continue;
 
+                Health health = enemy.GetComponent<Health>();
+
                 if (!alive || m_EnemyDead[i])
                 {
+                    if (health != null && health.CurrentHealth > 0f)
+                        health.CurrentHealth = 0f;
+
                     if (enemy.gameObject.activeSelf)
                         enemy.gameObject.SetActive(false);
                     continue;
                 }
+
+                // The server owns enemy health. Applying the snapshot keeps the client's
+                // floating health bar in step with the authoritative value.
+                if (health != null)
+                    health.CurrentHealth = currentHealth;
 
                 enemy.transform.SetPositionAndRotation(position, rotation);
             }

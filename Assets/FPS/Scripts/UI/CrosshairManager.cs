@@ -20,18 +20,45 @@ namespace Unity.FPS.UI
 
         void Start()
         {
-            m_WeaponsManager = FindAnyObjectByType<PlayerWeaponsManager>();
-            DebugUtility.HandleErrorIfNullFindObject<PlayerWeaponsManager, CrosshairManager>(m_WeaponsManager, this);
-
-            OnWeaponChanged(m_WeaponsManager.GetActiveWeapon());
-
-            m_WeaponsManager.OnSwitchedToWeapon += OnWeaponChanged;
+            TryBind();
         }
 
         void Update()
         {
+            // The local networked player can spawn a frame or two after the HUD.
+            if (m_WeaponsManager == null && !TryBind())
+                return;
+
             UpdateCrosshairPointingAtEnemy(false);
             m_WasPointingAtEnemy = m_WeaponsManager.IsPointingAtEnemy;
+        }
+
+        bool TryBind()
+        {
+            PlayerCharacterController player = LocalPlayerLocator.Find();
+            if (player == null)
+                return false;
+
+            PlayerWeaponsManager weaponsManager = player.GetComponent<PlayerWeaponsManager>();
+            if (weaponsManager == null)
+                return false;
+
+            if (weaponsManager == m_WeaponsManager)
+                return true;
+
+            if (m_WeaponsManager != null)
+                m_WeaponsManager.OnSwitchedToWeapon -= OnWeaponChanged;
+
+            m_WeaponsManager = weaponsManager;
+            m_WeaponsManager.OnSwitchedToWeapon += OnWeaponChanged;
+            OnWeaponChanged(m_WeaponsManager.GetActiveWeapon());
+            return true;
+        }
+
+        void OnDestroy()
+        {
+            if (m_WeaponsManager != null)
+                m_WeaponsManager.OnSwitchedToWeapon -= OnWeaponChanged;
         }
 
         void UpdateCrosshairPointingAtEnemy(bool force)

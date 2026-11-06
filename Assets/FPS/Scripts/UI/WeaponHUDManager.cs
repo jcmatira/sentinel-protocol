@@ -14,13 +14,43 @@ namespace Unity.FPS.UI
         public GameObject AmmoCounterPrefab;
 
         PlayerWeaponsManager m_PlayerWeaponsManager;
-        List<AmmoCounter> m_AmmoCounters = new List<AmmoCounter>();
+        readonly List<AmmoCounter> m_AmmoCounters = new List<AmmoCounter>();
+        bool m_Bound;
 
         void Start()
         {
-            m_PlayerWeaponsManager = FindAnyObjectByType<PlayerWeaponsManager>();
-            DebugUtility.HandleErrorIfNullFindObject<PlayerWeaponsManager, WeaponHUDManager>(m_PlayerWeaponsManager,
-                this);
+            TryBind();
+        }
+
+        void Update()
+        {
+            // The local networked player can spawn a frame or two after the HUD.
+            if (!m_Bound)
+                TryBind();
+        }
+
+        bool TryBind()
+        {
+            PlayerCharacterController player = LocalPlayerLocator.Find();
+            if (player == null)
+                return false;
+
+            PlayerWeaponsManager weaponsManager = player.GetComponent<PlayerWeaponsManager>();
+            if (weaponsManager == null)
+                return false;
+
+            if (weaponsManager == m_PlayerWeaponsManager)
+            {
+                m_Bound = true;
+                return true;
+            }
+
+            Unbind();
+
+            m_PlayerWeaponsManager = weaponsManager;
+            m_PlayerWeaponsManager.OnAddedWeapon += AddWeapon;
+            m_PlayerWeaponsManager.OnRemovedWeapon += RemoveWeapon;
+            m_PlayerWeaponsManager.OnSwitchedToWeapon += ChangeWeapon;
 
             WeaponController activeWeapon = m_PlayerWeaponsManager.GetActiveWeapon();
             if (activeWeapon)
@@ -29,9 +59,33 @@ namespace Unity.FPS.UI
                 ChangeWeapon(activeWeapon);
             }
 
-            m_PlayerWeaponsManager.OnAddedWeapon += AddWeapon;
-            m_PlayerWeaponsManager.OnRemovedWeapon += RemoveWeapon;
-            m_PlayerWeaponsManager.OnSwitchedToWeapon += ChangeWeapon;
+            m_Bound = true;
+            return true;
+        }
+
+        void Unbind()
+        {
+            if (m_PlayerWeaponsManager != null)
+            {
+                m_PlayerWeaponsManager.OnAddedWeapon -= AddWeapon;
+                m_PlayerWeaponsManager.OnRemovedWeapon -= RemoveWeapon;
+                m_PlayerWeaponsManager.OnSwitchedToWeapon -= ChangeWeapon;
+            }
+
+            for (int i = 0; i < m_AmmoCounters.Count; i++)
+            {
+                if (m_AmmoCounters[i] != null)
+                    Destroy(m_AmmoCounters[i].gameObject);
+            }
+
+            m_AmmoCounters.Clear();
+            m_PlayerWeaponsManager = null;
+            m_Bound = false;
+        }
+
+        void OnDestroy()
+        {
+            Unbind();
         }
 
         void AddWeapon(WeaponController newWeapon, int weaponIndex)
@@ -41,7 +95,7 @@ namespace Unity.FPS.UI
             DebugUtility.HandleErrorIfNullGetComponent<AmmoCounter, WeaponHUDManager>(newAmmoCounter, this,
                 ammoCounterInstance.gameObject);
 
-            newAmmoCounter.Initialize(newWeapon, weaponIndex);
+            newAmmoCounter.Initialize(newWeapon, weaponIndex, m_PlayerWeaponsManager);
 
             m_AmmoCounters.Add(newAmmoCounter);
         }

@@ -67,11 +67,13 @@ single-player campaign.
 ## Phase 2 status (implemented)
 
 - **Server-owned enemies:** clients disable the local enemy AI, navigation,
-  detection and weapons. The server sends enemy position/rotation/alive
+  detection and weapons. The server sends enemy position/rotation/alive/health
   snapshots at 10 Hz through NGO custom messages.
-- **Shared kills:** when a client kills its local enemy copy, it sends a kill
-  claim to the server. The server kills the authoritative enemy, which updates
-  the objective, score and kill count for everyone.
+- **Shared damage and kills:** every hit a client lands on a local enemy is
+  forwarded to the server as a damage claim. The server applies it to the
+  authoritative enemy, so its health bar matches on every screen. A client
+  kill also sends a kill claim, which updates the objective, score and kill
+  count for everyone.
 - **Synced timer and score:** the server broadcasts `TimeRemaining`, `Kills` and
   `Score` at 4 Hz. Clients stop ticking their own clock and display the
   server's values.
@@ -81,10 +83,23 @@ single-player campaign.
 - The client's `ObjectiveManager` is removed so a local objective completion
   cannot desynchronise the match.
 
+### Visible teammates and per-client HUD
+
+- The stock player is first-person only and has no third-person mesh, so remote
+  copies used to show only the projected blob shadow. Remote copies now build a
+  simple robot avatar from primitives (body, head, visor, shoulders, arms and a
+  chest light); owners do not see their own avatar.
+- The stock HUD binds with `FindAnyObjectByType` to the level's single-player
+  Player. In a network session that copy is stripped, which is why clients lost
+  the crosshair and health/ammo appeared static. `LocalPlayerLocator` now finds
+  the **owned NetworkPlayer**, and the HUD scripts retry until that player
+  spawns. This covers the crosshair, health bar, damage flash, weapon/ammo
+  panel, stance, jetpack, compass, notifications and pause menu.
+
 ### Phase 2 limitations
 
-- Player health and damage are **not** synced yet; the stock HUD still binds to
-  the disabled single-player Player, so health/ammo can look static.
+- Player health and damage between humans and bots are **not** replicated yet;
+  each player's own health is still local.
 - Enemy animations, muzzle flashes and weapon effects are not replicated;
   client-side enemies are frozen proxies moved by snapshots.
 - Join-in-progress after the mission starts is not supported.

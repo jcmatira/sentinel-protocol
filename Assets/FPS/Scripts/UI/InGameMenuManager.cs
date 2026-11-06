@@ -39,27 +39,20 @@ namespace Unity.FPS.UI
         private InputAction m_NavigateAction;
         private InputAction m_MenuAction;
 
+        bool m_PlayerBound;
+
         void Start()
         {
-            m_PlayerInputsHandler = FindAnyObjectByType<PlayerInputHandler>();
-            DebugUtility.HandleErrorIfNullFindObject<PlayerInputHandler, InGameMenuManager>(m_PlayerInputsHandler,
-                this);
-
-            m_PlayerHealth = m_PlayerInputsHandler.GetComponent<Health>();
-            DebugUtility.HandleErrorIfNullGetComponent<Health, InGameMenuManager>(m_PlayerHealth, this, gameObject);
-
             m_FramerateCounter = FindAnyObjectByType<FramerateCounter>();
             DebugUtility.HandleErrorIfNullFindObject<FramerateCounter, InGameMenuManager>(m_FramerateCounter, this);
 
             MenuRoot.SetActive(false);
 
-            LookSensitivitySlider.value = m_PlayerInputsHandler.LookSensitivity;
             LookSensitivitySlider.onValueChanged.AddListener(OnMouseSensitivityChanged);
 
             ShadowsToggle.isOn = QualitySettings.shadows != ShadowQuality.Disable;
             ShadowsToggle.onValueChanged.AddListener(OnShadowsChanged);
 
-            InvincibilityToggle.isOn = m_PlayerHealth.Invincible;
             InvincibilityToggle.onValueChanged.AddListener(OnInvincibilityChanged);
 
             FramerateToggle.isOn = m_FramerateCounter.UIText.gameObject.activeSelf;
@@ -74,10 +67,16 @@ namespace Unity.FPS.UI
             m_CancelAction.Enable();
             m_NavigateAction.Enable();
             m_MenuAction.Enable();
+
+            TryBindPlayer();
         }
 
         void Update()
         {
+            // The local networked player can spawn a frame or two after the HUD.
+            if (!m_PlayerBound)
+                TryBindPlayer();
+
             // Lock cursor when clicking outside of menu
             if (!MenuRoot.activeSelf && Mouse.current.leftButton.wasPressedThisFrame)
             {
@@ -114,6 +113,26 @@ namespace Unity.FPS.UI
             }
         }
 
+        bool TryBindPlayer()
+        {
+            PlayerCharacterController player = LocalPlayerLocator.Find();
+            if (player == null)
+                return false;
+
+            PlayerInputHandler inputHandler = player.GetComponent<PlayerInputHandler>();
+            Health health = player.GetComponent<Health>();
+            if (inputHandler == null || health == null)
+                return false;
+
+            m_PlayerInputsHandler = inputHandler;
+            m_PlayerHealth = health;
+
+            LookSensitivitySlider.value = m_PlayerInputsHandler.LookSensitivity;
+            InvincibilityToggle.isOn = m_PlayerHealth.Invincible;
+            m_PlayerBound = true;
+            return true;
+        }
+
         public void ClosePauseMenu()
         {
             SetPauseMenuActivation(false);
@@ -144,7 +163,8 @@ namespace Unity.FPS.UI
 
         void OnMouseSensitivityChanged(float newValue)
         {
-            m_PlayerInputsHandler.LookSensitivity = newValue;
+            if (m_PlayerInputsHandler != null)
+                m_PlayerInputsHandler.LookSensitivity = newValue;
         }
 
         void OnShadowsChanged(bool newValue)
@@ -154,7 +174,8 @@ namespace Unity.FPS.UI
 
         void OnInvincibilityChanged(bool newValue)
         {
-            m_PlayerHealth.Invincible = newValue;
+            if (m_PlayerHealth != null)
+                m_PlayerHealth.Invincible = newValue;
         }
 
         void OnFramerateCounterChanged(bool newValue)

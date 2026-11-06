@@ -21,16 +21,18 @@
 - [x] Host / Join UI on the menu
 - [x] Connection approval and max-player config
 - [x] Network player prefab setup tool
-- [ ] Networked mission scene loading (Phase 1/4)
+- [x] Networked mission scene loading (Phase 1/4)
 
 ## Phase 1 — Networking foundation
 
-- [ ] `NetworkManager` + Unity Transport
+- [x] `NetworkManager` + Unity Transport
 - [x] Player prefab as `NetworkObject`
 - [x] `NetworkTransform` (owner authority)
 - [x] Spawn points (level player position + offsets)
 - [x] Enable movement/input only on the local owner
 - [x] Remote player proxies (no camera, no input, no audio listener)
+- [x] Visible remote avatars (runtime robot body for first-person-only player)
+- [x] Per-client HUD binding (crosshair, health, ammo, stance, jetpack, compass)
 - [ ] Test with 2–4 virtual players (rebuild + LAN test)
 
 **Milestone:** four players can join one mission and move around together.
@@ -55,6 +57,7 @@
 - [ ] Scout / Trooper / Heavy / Sniper archetypes
 - [ ] Per-mission profiles
 - [x] Server kill claims update the shared objective
+- [x] Networked enemy damage and health-bar sync
 
 **Milestone:** four players clear a bot round on Foundry.
 

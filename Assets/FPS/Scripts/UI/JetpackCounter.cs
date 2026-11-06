@@ -20,14 +20,20 @@ namespace Unity.FPS.UI
 
         void Awake()
         {
-            m_Jetpack = FindAnyObjectByType<Jetpack>();
-            DebugUtility.HandleErrorIfNullFindObject<Jetpack, JetpackCounter>(m_Jetpack, this);
-
             FillBarColorChange.Initialize(1f, 0f);
+        }
+
+        void Start()
+        {
+            TryBind();
         }
 
         void Update()
         {
+            // The local networked player can spawn a frame or two after the HUD.
+            if (m_Jetpack == null && !TryBind())
+                return;
+
             MainCanvasGroup.gameObject.SetActive(m_Jetpack.IsJetpackUnlocked);
 
             if (m_Jetpack.IsJetpackUnlocked)
@@ -35,6 +41,20 @@ namespace Unity.FPS.UI
                 JetpackFillImage.fillAmount = m_Jetpack.CurrentFillRatio;
                 FillBarColorChange.UpdateVisual(m_Jetpack.CurrentFillRatio);
             }
+        }
+
+        bool TryBind()
+        {
+            PlayerCharacterController player = LocalPlayerLocator.Find();
+            if (player == null)
+                return false;
+
+            Jetpack jetpack = player.GetComponent<Jetpack>();
+            if (jetpack == null)
+                return false;
+
+            m_Jetpack = jetpack;
+            return true;
         }
     }
 }
