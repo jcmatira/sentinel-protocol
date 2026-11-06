@@ -689,8 +689,19 @@ namespace Unity.FPS.Multiplayer
             // Clamp to the enemy's maximum so a malformed or modified client cannot
             // one-shot the whole encounter with a huge value.
             damage = Mathf.Clamp(damage, 0f, health.MaxHealth);
-            if (damage > 0f)
-                health.TakeDamage(damage, null);
+            if (damage <= 0f)
+                return;
+
+            // Attribute the hit to the sending player so the bot's detection module
+            // can pursue the attacker, exactly as it would for the host.
+            GameObject damageSource = null;
+            if (Manager.ConnectedClients.TryGetValue(sender, out NetworkClient client) &&
+                client.PlayerObject != null)
+            {
+                damageSource = client.PlayerObject.gameObject;
+            }
+
+            health.TakeDamage(damage, damageSource);
         }
 
         void OnEnemyKillClaim(ulong sender, FastBufferReader reader)

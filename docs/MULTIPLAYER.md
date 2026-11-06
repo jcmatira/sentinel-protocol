@@ -70,10 +70,10 @@ single-player campaign.
   detection and weapons. The server sends enemy position/rotation/alive/health
   snapshots at 10 Hz through NGO custom messages.
 - **Shared damage and kills:** every hit a client lands on a local enemy is
-  forwarded to the server as a damage claim. The server applies it to the
-  authoritative enemy, so its health bar matches on every screen. A client
-  kill also sends a kill claim, which updates the objective, score and kill
-  count for everyone.
+  forwarded to the server as a damage claim, attributed to the sending player
+  so bots pursue the attacker. The server applies it to the authoritative
+  enemy, so its health bar matches on every screen. A client kill also sends a
+  kill claim, which updates the objective, score and kill count for everyone.
 - **Synced timer and score:** the server broadcasts `TimeRemaining`, `Kills` and
   `Score` at 4 Hz. Clients stop ticking their own clock and display the
   server's values.
